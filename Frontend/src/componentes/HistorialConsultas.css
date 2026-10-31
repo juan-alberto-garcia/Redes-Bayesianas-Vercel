@@ -1,0 +1,246 @@
+
+/* Contenedor del historial */
+.historialConsultas {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+/* Encabezado */
+.encabezadoHistorial {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.encabezadoHistorial h2 {
+    margin: 0 0 12px;
+}
+
+.encabezadoHistorial p {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+.contadorHistorial {
+    flex-shrink: 0;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #475569;
+    background: #1e293b;
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+/* Historial vacio */
+.historialVacio {
+    padding: 20px;
+    border: 1px dashed #475569;
+    border-radius: 10px;
+    color: #94a3b8;
+}
+
+/* Acciones superiores */
+.accionesHistorial {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.accionesHistorial p {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+.botonLimpiarHistorial,
+.botonEliminarHistorial {
+    background: #7f1d1d;
+    color: #fff;
+}
+
+.botonLimpiarHistorial:hover,
+.botonEliminarHistorial:hover {
+    background: #991b1b;
+}
+
+/* Lista de consultas */
+.listaHistorial {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 330px), 1fr)
+    );
+    gap: 14px;
+}
+
+/* Registro individual */
+.registroHistorial {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+
+    padding: 18px;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    background: #1e293b;
+    min-width: 0;
+}
+
+.registroHistorial h3 {
+    margin: 8px 0 12px;
+    color: #f8fafc;
+    font-size: 17px;
+}
+
+.registroHistorial p {
+    margin: 8px 0;
+    color: #cbd5e1;
+    overflow-wrap: anywhere;
+}
+
+.registroHistorial strong {
+    color: #f8fafc;
+}
+
+.registroHistorial small {
+    display: block;
+    margin-top: 10px;
+    color: #94a3b8;
+}
+
+/* Casilla para comparar */
+.compararRegistro {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: fit-content;
+    cursor: pointer;
+    color: #f8fafc;
+}
+
+.compararRegistro input {
+    width: 17px;
+    height: 17px;
+    accent-color: #e11d48;
+}
+
+/* Resultados guardados */
+.resumenRegistro {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.resumenRegistro > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+
+    padding: 9px 0;
+    border-bottom: 1px solid #334155;
+}
+
+.resumenRegistro span {
+    color: #cbd5e1;
+    overflow-wrap: anywhere;
+}
+
+.resumenRegistro strong {
+    color: #4ade80;
+    white-space: nowrap;
+}
+
+/* Botones de cada registro */
+.botonesRegistro {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.botonesRegistro button {
+    padding: 10px 14px;
+}
+
+/* Comparacion */
+.panelComparacion {
+    padding: 20px;
+    border: 1px solid #475569;
+    border-radius: 10px;
+    background: #1e293b;
+}
+
+.panelComparacion h3 {
+    margin-top: 0;
+    color: #f8fafc;
+}
+
+.panelComparacion p {
+    color: #cbd5e1;
+}
+
+.avisoComparacion {
+    padding: 14px;
+    border-left: 3px solid #f59e0b;
+    background: #292524;
+}
+
+/* Tabla desplazable en pantallas pequenas */
+.tablaComparacion {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.tablaComparacion table {
+    width: 100%;
+    min-width: 590px;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.tablaComparacion th,
+.tablaComparacion td {
+    padding: 12px;
+    border-bottom: 1px solid #475569;
+}
+
+.tablaComparacion th {
+    color: #f8fafc;
+    background: #334155;
+}
+
+.tablaComparacion td {
+    color: #cbd5e1;
+}
+
+.notaComparacion {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+/* Adaptacion a celulares */
+@media (max-width: 640px) {
+
+    .encabezadoHistorial {
+        flex-direction: column;
+    }
+
+    .listaHistorial {
+        grid-template-columns: 1fr;
+    }
+
+    .registroHistorial,
+    .panelComparacion {
+        padding: 14px;
+    }
+
+    .botonesRegistro button {
+        flex: 1;
+    }
+}
