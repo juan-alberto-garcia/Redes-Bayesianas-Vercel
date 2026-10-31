@@ -1,10 +1,11 @@
 
-/* Contenedor principal */
+/* DISEÑO */
+
 .aplicacion {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 32px;
+    padding: clamp(12px, 3vw, 32px);
 }
 
 /* Encabezado */
@@ -19,8 +20,8 @@
 
 .encabezado h1 {
     margin: 0;
-    color: #ffffff;
-    font-size: 38px;
+    color: white;
+    font-size: clamp(26px, 4vw, 38px);
 }
 
 .encabezado p {
@@ -29,27 +30,27 @@
     margin-top: 12px;
 }
 
-/* Estado del Backend */
 .estado {
-    background-color: #252c39;
+    background: #252c39;
     color: #4ade80;
     padding: 14px 20px;
     border-radius: 10px;
-    font-size: 16px;
 }
 
 /* Paneles */
 .panel {
-    background-color: #181d27;
+    min-width: 0;
+    background: #181d27;
     border: 1px solid #303849;
     border-radius: 16px;
     padding: 30px;
     margin-bottom: 26px;
+    overflow-wrap: anywhere;
 }
 
 .panel h2 {
-    color: #ffffff;
-    font-size: 28px;
+    color: white;
+    font-size: clamp(22px, 3vw, 28px);
     margin: 0 0 20px;
 }
 
@@ -57,26 +58,29 @@
     color: #aab5c8;
 }
 
-/* Contenedor de nodos */
+/* TARJETAS DE NODOS */
+
 .nodos {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 230px), 1fr)
+    );
     gap: 20px;
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin: 30px 0;
+    width: 100%;
 }
 
-/* Tarjetas de nodos */
 .nodo {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    width: 200px;
-    min-width: 180px;
-    background-color: #252b38;
+    width: 100%;
+    min-width: 0;
+    padding: 20px;
+    background: #252b38;
     border: 1px solid #627087;
     border-radius: 12px;
-    padding: 20px;
 }
 
 .nodo strong {
@@ -87,14 +91,15 @@
 
 .nodo small {
     color: #b9c9e2;
-    font-size: 15px;
+    font-size: 14px;
     overflow-wrap: anywhere;
 }
 
-/* Botones generales */
+/* BOTONES */
+
 button {
-    background-color: #df2026;
-    color: #ffffff;
+    background: #df2026;
+    color: white;
     border: none;
     border-radius: 10px;
     padding: 14px 22px;
@@ -105,7 +110,7 @@ button {
 }
 
 button:hover {
-    background-color: #b91c1c;
+    background: #b91c1c;
 }
 
 button:disabled {
@@ -113,7 +118,6 @@ button:disabled {
     cursor: not-allowed;
 }
 
-/* Acciones de la red */
 .accionesRed {
     display: flex;
     flex-wrap: wrap;
@@ -122,23 +126,90 @@ button:disabled {
     margin-top: 20px;
 }
 
-/* Boton de renombrar */
+/* Renombrar */
 .botonRenombrar {
     margin-top: 12px;
     padding: 10px 12px;
-    background-color: #374151;
+    background: #374151;
     border: 1px solid #64748b;
-    border-radius: 8px;
-    color: white;
     font-size: 14px;
     font-weight: 500;
 }
 
 .botonRenombrar:hover {
-    background-color: #4b5563;
+    background: #4b5563;
 }
 
-/* Campos de consulta */
+/* Eliminar */
+.botonEliminar {
+    padding: 10px 12px;
+    background: #7f1d1d;
+    font-size: 14px;
+}
+
+.botonEliminar:hover {
+    background: #991b1b;
+}
+
+/* Conectar */
+.botonSecundario {
+    padding: 10px 12px;
+    background: #334155;
+    font-size: 14px;
+}
+
+.botonSecundario:hover {
+    background: #475569;
+}
+
+/* Relaciones existentes */
+.listaPadres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.botonPadre {
+    padding: 6px 10px;
+    background: #374151;
+    border: 1px solid #64748b;
+    font-size: 13px;
+}
+
+.botonPadre:hover {
+    background: #475569;
+}
+
+/* CONFIGURACION DE PADRES */
+
+.configuracionPadres {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.configuracionPadres label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #d1d5db;
+    font-size: 14px;
+}
+
+.configuracionPadres select {
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    background: #171c26;
+    color: white;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+/* CONSULTAS */
+
 .campos {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -146,63 +217,58 @@ button:disabled {
     margin: 26px 0;
 }
 
-/* Etiquetas */
 .campos label {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    color: #ffffff;
-    font-size: 16px;
     min-width: 0;
+    color: white;
+    font-size: 16px;
 }
 
-/* Listas desplegables */
 .campos select {
     width: 100%;
     min-width: 0;
-    background-color: #252b38;
+    padding: 14px 16px;
+    background: #252b38;
     color: white;
     border: 1px solid #647087;
     border-radius: 10px;
-    padding: 14px 16px;
     font-size: 16px;
-    cursor: pointer;
 }
 
-.campos select:focus {
+select:focus {
     outline: 2px solid #ef4444;
 }
 
-.campos select:disabled {
+select:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
 }
 
-/* Mensajes */
+/* MENSAJES Y RESULTADOS */
+
 .exito {
     color: #4ade80 !important;
     margin-top: 20px;
-    font-weight: 500;
 }
 
 .error {
     color: #f87171 !important;
     margin-top: 20px;
-    font-weight: 500;
 }
 
-/* Resultados */
 .filaResultado {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
     padding: 20px 0;
     border-bottom: 1px solid #374151;
 }
 
 .filaResultado span {
-    color: #ffffff;
+    color: white;
     font-size: 17px;
 }
 
@@ -211,32 +277,206 @@ button:disabled {
     font-size: 18px;
 }
 
-.filaResultado + p {
-    margin-top: 24px;
-    color: #aab5c8;
-}
+/* DISEÑO RESPONSIVO */
 
-/* Pantallas pequeñas */
-@media (max-width: 750px) {
+/* Tablets y ventanas medianas */
+@media (max-width: 900px) {
 
-    .aplicacion {
-        padding: 18px;
+    .nodos {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
     }
 
-    .encabezado h1 {
-        font-size: 30px;
+    .campos {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+        gap: 18px;
     }
 
     .panel {
-        padding: 20px;
+        padding: 24px;
+    }
+}
+
+/* Celulares */
+@media (max-width: 640px) {
+
+    .aplicacion {
+        padding: 12px;
+    }
+
+    .encabezado {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .estado {
+        font-size: 14px;
+        padding: 10px 14px;
+    }
+
+    .panel {
+        padding: 18px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+    }
+
+    .nodos {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .nodo {
+        padding: 16px;
     }
 
     .campos {
         grid-template-columns: 1fr;
-        gap: 18px;
+        gap: 16px;
+    }
+
+    .campos select,
+    .configuracionPadres select {
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .accionesRed {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .accionesRed button {
+        width: 100%;
+    }
+}
+
+/* Celulares pequeños */
+@media (max-width: 380px) {
+
+    .panel {
+        padding: 14px;
     }
 
     .nodo {
-        width: 100%;
+        padding: 14px;
+    }
+
+    button {
+        padding: 12px;
+        font-size: 14px;
+    }
+}
+
+/* EDITOR DE TABLAS CPT */
+
+.editorCpt {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.selectorNodoCpt {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 400px;
+    color: white;
+}
+
+.selectorNodoCpt select {
+    width: 100%;
+    padding: 12px;
+    background: #252b38;
+    color: white;
+    border: 1px solid #64748b;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.informacionCpt {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 18px;
+    background: #252b38;
+    border: 1px solid #374151;
+    border-radius: 10px;
+}
+
+.informacionCpt span {
+    color: #b9c9e2;
+    font-size: 14px;
+}
+
+/* Contenedor de filas */
+.filasCpt {
+    display: grid;
+    gap: 14px;
+}
+
+/* Cada combinacion de padres */
+.filaCpt {
+    padding: 18px;
+    background: #202633;
+    border: 1px solid #475569;
+    border-radius: 12px;
+}
+
+.condicionesCpt {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.condicionesCpt span {
+    color: #aab5c8;
+    overflow-wrap: anywhere;
+}
+
+/* Campos de probabilidades */
+.probabilidadesCpt {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 120px), 1fr)
+    );
+    gap: 14px;
+}
+
+.probabilidadesCpt label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #e5e7eb;
+}
+
+.probabilidadesCpt input {
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+    background: #151a23;
+    color: white;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.probabilidadesCpt input:focus {
+    outline: 2px solid #ef4444;
+}
+
+/* Adaptacion para celulares */
+@media (max-width: 640px) {
+
+    .filaCpt {
+        padding: 14px;
+    }
+
+    .selectorNodoCpt {
+        max-width: 100%;
     }
 }
