@@ -1,0 +1,152 @@
+
+/* Contenedor de evidencias */
+.editorEvidencias {
+    margin-top: 24px;
+    padding-top: 20px;
+
+    border-top: 1px solid #334155;
+}
+
+.editorEvidencias h3 {
+    margin: 0 0 12px;
+    font-size: 20px;
+}
+
+.editorEvidencias p {
+    color: #a9b9d2;
+}
+
+
+/* Selector para agregar evidencias */
+.selectorEvidencia {
+    max-width: 400px;
+    margin: 18px 0;
+}
+
+.selectorEvidencia label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.selectorEvidencia select {
+    width: 100%;
+}
+
+
+/* Lista de evidencias */
+.listaEvidencias {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filaEvidencia {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+
+    gap: 16px;
+
+    padding: 16px;
+
+    background: #1e293b;
+
+    border: 1px solid #475569;
+    border-radius: 10px;
+}
+
+
+/* Nombre de la variable */
+.nombreEvidencia {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.nombreEvidencia span {
+    font-size: 14px;
+    color: #cbd5e1;
+}
+
+.nombreEvidencia strong {
+    padding: 10px 0;
+    color: #f8fafc;
+}
+
+
+/* Estado observado */
+.filaEvidencia label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filaEvidencia select {
+    width: 100%;
+}
+
+
+/* Boton para quitar evidencia */
+.botonQuitarEvidencia {
+    padding: 12px 18px;
+
+    color: #f8fafc;
+    background: #9f1239;
+
+    border: none;
+    border-radius: 8px;
+
+    cursor: pointer;
+}
+
+.botonQuitarEvidencia:hover {
+    background: #be123c;
+}
+
+
+/* Mensajes */
+.sinEvidencias {
+    padding: 14px;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+}
+
+.resumenEvidencias {
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+
+/* Pantallas pequenas */
+@media (max-width: 640px) {
+
+    .filaEvidencia {
+        grid-template-columns: 1fr;
+    }
+
+    .selectorEvidencia {
+        max-width: 100%;
+    }
+
+    .botonQuitarEvidencia {
+        width: 100%;
+    }
+}
+/* Selectores con tema oscuro */
+.editorEvidencias select {
+    background-color: #252b38;
+    color: #ffffff;
+    border: 1px solid #64748b;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 15px;
+    color-scheme: dark;
+}
+
+/* Selector deshabilitado */
+.editorEvidencias select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
