@@ -1,0 +1,63 @@
+/* Lienzo del editor grafico de redes bayesianas */
+.lienzoGrafo {
+    width: 100%;
+    height: 460px;
+    min-height: 320px;
+    overflow: hidden;
+    border: 1px solid #394252;
+    border-radius: 12px;
+    background: #111827;
+}
+
+.lienzoGrafo .react-flow__node-default {
+    min-width: 140px;
+    padding: 14px 18px;
+    color: #f8fafc;
+    background: #1e293b;
+    border: 1px solid #e11d48;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 6px 16px #0004;
+}
+
+.lienzoGrafo .react-flow__node-default.selected {
+    border: 2px solid #fb7185;
+    box-shadow: 0 0 0 3px #e11d4840;
+}
+
+.lienzoGrafo .react-flow__handle {
+    width: 11px;
+    height: 11px;
+    background: #e11d48;
+    border: 2px solid #f8fafc;
+}
+
+.lienzoGrafo .react-flow__controls button {
+    color: #e2e8f0;
+    background: #1e293b;
+    border-bottom-color: #475569;
+}
+
+.lienzoGrafo .react-flow__controls button:hover {
+    background: #334155;
+}
+
+.lienzoGrafo .react-flow__controls svg {
+    fill: currentColor;
+}
+
+.lienzoGrafo .react-flow__minimap {
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+}
+
+.detalleNodoGrafo {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+@media (max-width: 640px) {
+    .lienzoGrafo { height: 350px; }
+}

@@ -1,7 +1,9 @@
 
 import { useEffect, useState } from 'react';
+
 import { clienteApi } from './servicios/clienteApi';
 import EditorCpt from './componentes/EditorCpt';
+import GrafoBayesiano from './componentes/GrafoBayesiano';
 
 import type {
     RedBayes,
@@ -13,17 +15,24 @@ import type {
 import './App.css';
 
 
-// Red de prueba
+// Red bayesiana de ejemplo
 const redEjemplo: RedBayes = {
-    nombre: 'Red de prueba IDK',
+    nombre: 'Lluvia, aspersor y cesped mojado',
     formato: 1,
+
     nodos: [
         {
+            // Nodo A: Lluvia
             id: 'A',
             nombre: 'Lluvia',
             estados: ['Si', 'No'],
             padres: [],
-            posicion: { x: 100, y: 100 },
+
+            posicion: {
+                x: 100,
+                y: 100
+            },
+
             tabla: [
                 {
                     condiciones: {},
@@ -34,41 +43,94 @@ const redEjemplo: RedBayes = {
                 }
             ]
         },
+
         {
+            // Nodo B: Aspersor
             id: 'B',
-            nombre: 'Cesped mojado',
-            estados: ['Si', 'No'],
-            padres: ['A'],
-            posicion: { x: 350, y: 100 },
-            tabla: [
-                {
-                    condiciones: { A: 'Si' },
-                    probabilidades: {
-                        Si: 0.9,
-                        No: 0.1
-                    }
-                },
-                {
-                    condiciones: { A: 'No' },
-                    probabilidades: {
-                        Si: 0.2,
-                        No: 0.8
-                    }
-                }
-            ]
-        },
-        {
-            id: 'C',
-            nombre: 'Trafico',
+            nombre: 'Aspersor',
             estados: ['Si', 'No'],
             padres: [],
-            posicion: { x: 100, y: 300 },
+
+            posicion: {
+                x: 100,
+                y: 320
+            },
+
             tabla: [
                 {
                     condiciones: {},
                     probabilidades: {
                         Si: 0.4,
                         No: 0.6
+                    }
+                }
+            ]
+        },
+
+        {
+            // Nodo C: Cesped mojado
+            id: 'C',
+            nombre: 'Cesped mojado',
+            estados: ['Si', 'No'],
+
+            // Depende de Lluvia y Aspersor
+            padres: ['A', 'B'],
+
+            posicion: {
+                x: 470,
+                y: 210
+            },
+
+            tabla: [
+                {
+                    // Llueve y el aspersor esta encendido
+                    condiciones: {
+                        A: 'Si',
+                        B: 'Si'
+                    },
+
+                    probabilidades: {
+                        Si: 0.99,
+                        No: 0.01
+                    }
+                },
+
+                {
+                    // Llueve y el aspersor esta apagado
+                    condiciones: {
+                        A: 'Si',
+                        B: 'No'
+                    },
+
+                    probabilidades: {
+                        Si: 0.90,
+                        No: 0.10
+                    }
+                },
+
+                {
+                    // No llueve y el aspersor esta encendido
+                    condiciones: {
+                        A: 'No',
+                        B: 'Si'
+                    },
+
+                    probabilidades: {
+                        Si: 0.80,
+                        No: 0.20
+                    }
+                },
+
+                {
+                    // No llueve y el aspersor esta apagado
+                    condiciones: {
+                        A: 'No',
+                        B: 'No'
+                    },
+
+                    probabilidades: {
+                        Si: 0.01,
+                        No: 0.99
                     }
                 }
             ]
@@ -105,8 +167,9 @@ function existeCamino(
 
         visitados.add(actual);
 
-        // Buscar los hijos del nodo actual
+        // Buscar hijos del nodo actual
         for (const nodo of nodos) {
+
             if (nodo.padres.includes(actual)) {
                 pendientes.push(nodo.id);
             }
@@ -117,7 +180,7 @@ function existeCamino(
 }
 
 
-// Construir la tabla cuando cambian los padres
+// Construir CPT cuando cambian los padres
 function construirTabla(
     nodoHijo: NodoBayes,
     padresNuevos: string[],
@@ -134,7 +197,9 @@ function construirTabla(
         );
 
         if (!padre) {
-            throw new Error('No se encontro el nodo padre');
+            throw new Error(
+                'No se encontro el nodo padre'
+            );
         }
 
         combinaciones = combinaciones.flatMap(
@@ -152,6 +217,7 @@ function construirTabla(
 
     return combinaciones.map(condiciones => ({
         condiciones,
+
         probabilidades: Object.fromEntries(
             nodoHijo.estados.map(estado => [
                 estado,
@@ -162,64 +228,94 @@ function construirTabla(
 }
 
 
+// Componente principal
 function App() {
 
-    // Red editable
+    // Red bayesiana editable
     const [redActual, setRedActual] =
         useState<RedBayes>(redEjemplo);
 
-    // Estado del servidor
+    // Estado del Backend
     const [conexion, setConexion] =
         useState('Comprobando...');
 
-    // Consulta y evidencia
-    const [consulta, setConsulta] = useState('A');
+    // Variable de consulta
+    const [consulta, setConsulta] =
+        useState('A');
 
-    const [variableEvidencia, setVariableEvidencia] =
-        useState('B');
+    // Variable de evidencia
+    const [
+        variableEvidencia,
+        setVariableEvidencia
+    ] = useState('C');
 
-    const [estadoEvidencia, setEstadoEvidencia] =
-        useState('Si');
+    // Estado de la evidencia
+    const [
+        estadoEvidencia,
+        setEstadoEvidencia
+    ] = useState('Si');
 
-    // Padres seleccionados para cada nodo
-    const [padresSeleccionados, setPadresSeleccionados] =
-        useState<Record<string, string>>({});
+    // Nodo seleccionado en el grafo
+    const [
+        nodoSeleccionado,
+        setNodoSeleccionado
+    ] = useState<string | null>(null);
 
-    // Resultados
+    // Padres seleccionados
+    const [
+        padresSeleccionados,
+        setPadresSeleccionados
+    ] = useState<Record<string, string>>({});
+
+    // Resultado de inferencia
     const [resultado, setResultado] =
         useState<RespuestaInferencia | null>(null);
 
     // Mensajes
-    const [mensaje, setMensaje] = useState('');
-    const [error, setError] = useState('');
-    const [cargando, setCargando] = useState(false);
+    const [mensaje, setMensaje] =
+        useState('');
+
+    const [error, setError] =
+        useState('');
+
+    const [cargando, setCargando] =
+        useState(false);
 
 
     // Comprobar conexion con FastAPI
     useEffect(() => {
 
         clienteApi.estado()
-            .then(datos => setConexion(datos.estado))
-            .catch(() => setConexion('Desconectado'));
+            .then(datos => {
+                setConexion(datos.estado);
+            })
+            .catch(() => {
+                setConexion('Desconectado');
+            });
 
     }, []);
 
 
     // Limpiar resultados anteriores
     function limpiarResultados() {
+
         setResultado(null);
         setMensaje('');
         setError('');
     }
 
 
-    // Agregar un nodo
+    // Agregar nodo a la red
     function agregarNodo() {
 
-        // Limitar la red a 10 nodos
+        // Limite de 10 nodos
         if (redActual.nodos.length >= 10) {
+
             setMensaje('');
-            setError('La red no puede superar los 10 nodos');
+            setError(
+                'La red no puede superar los 10 nodos'
+            );
+
             return;
         }
 
@@ -234,23 +330,31 @@ function App() {
             numero++;
         }
 
+        // Crear nodo
         const nuevoNodo: NodoBayes = {
+
             id: `N${numero}`,
             nombre: `Nodo ${numero}`,
+
             estados: ['Si', 'No'],
+
             padres: [],
+
             tabla: [
                 {
                     condiciones: {},
+
                     probabilidades: {
                         Si: 0.5,
                         No: 0.5
                     }
                 }
             ],
+
             posicion: {
                 x: 100 +
                     (redActual.nodos.length % 3) * 220,
+
                 y: 100 +
                     Math.floor(
                         redActual.nodos.length / 3
@@ -258,9 +362,10 @@ function App() {
             }
         };
 
-        // Actualizar la red
+        // Actualizar red
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: [
                 ...anterior.nodos,
                 nuevoNodo
@@ -271,20 +376,20 @@ function App() {
     }
 
 
-    // Cambiar el nombre de un nodo
+    // Renombrar un nodo
     function renombrarNodo(id: string) {
 
-        const nodoSeleccionado = redActual.nodos.find(
-            nodo => nodo.id === id
+        const nodo = redActual.nodos.find(
+            actual => actual.id === id
         );
 
-        if (!nodoSeleccionado) {
+        if (!nodo) {
             return;
         }
 
         const nuevoNombre = window.prompt(
             'Nuevo nombre del nodo:',
-            nodoSeleccionado.nombre
+            nodo.nombre
         );
 
         if (nuevoNombre === null) {
@@ -292,21 +397,26 @@ function App() {
         }
 
         if (!nuevoNombre.trim()) {
+
             setMensaje('');
-            setError('El nombre no puede estar vacio');
+            setError(
+                'El nombre no puede estar vacio'
+            );
+
             return;
         }
 
-        // Actualizar solo el nodo seleccionado
+        // Actualizar nombre
         setRedActual(anterior => ({
             ...anterior,
-            nodos: anterior.nodos.map(nodo =>
-                nodo.id === id
+
+            nodos: anterior.nodos.map(actual =>
+                actual.id === id
                     ? {
-                        ...nodo,
+                        ...actual,
                         nombre: nuevoNombre.trim()
                     }
-                    : nodo
+                    : actual
             )
         }));
 
@@ -314,15 +424,17 @@ function App() {
     }
 
 
-    // Eliminar un nodo
+    // Eliminar nodo
     function eliminarNodo(id: string) {
 
-        // Conservar minimo 3 nodos
+        // Minimo de 3 nodos
         if (redActual.nodos.length <= 3) {
+
             setMensaje('');
             setError(
                 'La red debe conservar al menos 3 nodos'
             );
+
             return;
         }
 
@@ -332,10 +444,12 @@ function App() {
         );
 
         if (hijos.length > 0) {
+
             setMensaje('');
             setError(
                 'Primero debes quitar las relaciones de este nodo'
             );
+
             return;
         }
 
@@ -347,35 +461,45 @@ function App() {
             return;
         }
 
-        const nodosRestantes = redActual.nodos.filter(
-            nodo => nodo.id !== id
-        );
+        // Eliminar nodo seleccionado
+        const nodosRestantes =
+            redActual.nodos.filter(
+                nodo => nodo.id !== id
+            );
 
-        // Actualizar la red
         setRedActual(anterior => ({
             ...anterior,
             nodos: nodosRestantes
         }));
 
-        // Actualizar variable de consulta
+        // Limpiar seleccion grafica
+        setNodoSeleccionado(actual =>
+            actual === id ? null : actual
+        );
+
+        // Actualizar consulta
         if (consulta === id) {
             setConsulta(nodosRestantes[0].id);
         }
 
         // Actualizar evidencia
         if (variableEvidencia === id) {
+
             setVariableEvidencia('');
             setEstadoEvidencia('Si');
         }
 
-        // Limpiar referencias en selectores de padres
+        // Limpiar referencias en selectores
         setPadresSeleccionados(anterior => {
 
-            const nuevos = { ...anterior };
+            const nuevos = {
+                ...anterior
+            };
 
             delete nuevos[id];
 
             for (const hijoId of Object.keys(nuevos)) {
+
                 if (nuevos[hijoId] === id) {
                     nuevos[hijoId] = '';
                 }
@@ -388,7 +512,7 @@ function App() {
     }
 
 
-    // Agregar una relacion padre-hijo
+    // Agregar relacion padre-hijo
     function agregarRelacion(
         idPadre: string,
         idHijo: string
@@ -402,30 +526,40 @@ function App() {
             nodo => nodo.id === idHijo
         );
 
-        // Comprobar nodos
+        // Comprobar que existan
         if (!padre || !hijo) {
+
             setMensaje('');
-            setError('Selecciona un nodo padre valido');
+            setError(
+                'Selecciona un nodo padre valido'
+            );
+
             return;
         }
 
         // Evitar relacion consigo mismo
         if (idPadre === idHijo) {
+
             setMensaje('');
             setError(
                 'Un nodo no puede ser su propio padre'
             );
+
             return;
         }
 
-        // Evitar relaciones repetidas
+        // Evitar relaciones duplicadas
         if (hijo.padres.includes(idPadre)) {
+
             setMensaje('');
-            setError('Esta relacion ya existe');
+            setError(
+                'Esta relacion ya existe'
+            );
+
             return;
         }
 
-        // Evitar ciclos dirigidos
+        // Evitar ciclos
         if (
             existeCamino(
                 idHijo,
@@ -433,14 +567,16 @@ function App() {
                 redActual.nodos
             )
         ) {
+
             setMensaje('');
             setError(
                 'No se puede crear la relacion: produciria un ciclo'
             );
+
             return;
         }
 
-        // Avisar sobre el cambio de CPT
+        // Confirmar reinicio de CPT
         const confirmar = window.confirm(
             'La tabla CPT del nodo hijo se reiniciara ' +
             'con probabilidades uniformes. ¿Continuar?'
@@ -450,21 +586,23 @@ function App() {
             return;
         }
 
+        // Agregar padre
         const padresNuevos = [
             ...hijo.padres,
             idPadre
         ];
 
-        // Generar tabla con nuevas combinaciones
+        // Reconstruir tabla CPT
         const tablaNueva = construirTabla(
             hijo,
             padresNuevos,
             redActual.nodos
         );
 
-        // Guardar relacion y tabla
+        // Guardar cambios
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idHijo
                     ? {
@@ -486,7 +624,7 @@ function App() {
     }
 
 
-    // Eliminar una relacion padre-hijo
+    // Quitar relacion padre-hijo
     function quitarRelacion(
         idPadre: string,
         idHijo: string
@@ -496,10 +634,15 @@ function App() {
             nodo => nodo.id === idHijo
         );
 
-        if (!hijo || !hijo.padres.includes(idPadre)) {
+        // Comprobar relacion
+        if (
+            !hijo ||
+            !hijo.padres.includes(idPadre)
+        ) {
             return;
         }
 
+        // Confirmar eliminacion
         const confirmar = window.confirm(
             'Se eliminara la relacion y se reiniciara ' +
             'la tabla CPT del hijo. ¿Continuar?'
@@ -509,11 +652,12 @@ function App() {
             return;
         }
 
+        // Quitar padre
         const padresNuevos = hijo.padres.filter(
             padre => padre !== idPadre
         );
 
-        // Construir tabla sin ese padre
+        // Reconstruir CPT
         const tablaNueva = construirTabla(
             hijo,
             padresNuevos,
@@ -523,6 +667,7 @@ function App() {
         // Actualizar nodo hijo
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idHijo
                     ? {
@@ -538,15 +683,15 @@ function App() {
     }
 
 
-    // Guardar una tabla CPT editada
+    // Guardar CPT editada
     function guardarCpt(
         idNodo: string,
         tablaNueva: FilaProbabilidad[]
     ) {
 
-        // Actualizar las probabilidades del nodo
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idNodo
                     ? {
@@ -557,12 +702,60 @@ function App() {
             )
         }));
 
-        // Invalidar resultados anteriores
         limpiarResultados();
     }
 
 
-    // Validar la red bayesiana
+    // Guardar posiciones desde React Flow
+    function moverNodos(
+        movimientos: {
+            id: string;
+            posicion: {
+                x: number;
+                y: number;
+            };
+        }[]
+    ) {
+
+        const posiciones = new Map(
+            movimientos.map(movimiento => [
+                movimiento.id,
+                movimiento.posicion
+            ])
+        );
+
+        setRedActual(anterior => ({
+            ...anterior,
+
+            nodos: anterior.nodos.map(nodo => {
+
+                const posicion =
+                    posiciones.get(nodo.id);
+
+                if (!posicion) {
+                    return nodo;
+                }
+
+                // Evitar actualizaciones innecesarias
+                if (
+                    nodo.posicion.x === posicion.x &&
+                    nodo.posicion.y === posicion.y
+                ) {
+                    return nodo;
+                }
+
+                return {
+                    ...nodo,
+                    posicion
+                };
+            })
+        }));
+
+        // Mover nodos no modifica probabilidades
+    }
+
+
+    // Validar red mediante FastAPI
     async function validar() {
 
         setError('');
@@ -586,10 +779,11 @@ function App() {
     }
 
 
-    // Ejecutar eliminacion de variables
+    // Ejecutar inferencia
     async function calcular() {
 
         setCargando(true);
+
         setError('');
         setResultado(null);
 
@@ -602,12 +796,13 @@ function App() {
 
         try {
 
-            const respuesta = await clienteApi.inferir(
-                redActual,
-                [consulta],
-                evidencia,
-                false
-            );
+            const respuesta =
+                await clienteApi.inferir(
+                    redActual,
+                    [consulta],
+                    evidencia,
+                    false
+                );
 
             setResultado(respuesta);
 
@@ -627,6 +822,7 @@ function App() {
 
 
     return (
+
         <main className="aplicacion">
 
             {/* Encabezado */}
@@ -644,6 +840,30 @@ function App() {
             </header>
 
 
+            {/* Editor grafico */}
+            <GrafoBayesiano
+                red={redActual}
+
+                seleccionado={nodoSeleccionado}
+
+                onSeleccionar={
+                    setNodoSeleccionado
+                }
+
+                onConectar={
+                    agregarRelacion
+                }
+
+                onDesconectar={
+                    quitarRelacion
+                }
+
+                onMoverNodos={
+                    moverNodos
+                }
+            />
+
+
             {/* Panel de red bayesiana */}
             <section className="panel">
 
@@ -656,7 +876,7 @@ function App() {
                 </p>
 
 
-                {/* Mostrar tarjetas de nodos */}
+                {/* Tarjetas de nodos */}
                 <div className="nodos">
 
                     {redActual.nodos.map(nodo => (
@@ -666,7 +886,9 @@ function App() {
                             key={nodo.id}
                         >
 
-                            <strong>{nodo.nombre}</strong>
+                            <strong>
+                                {nodo.nombre}
+                            </strong>
 
                             <small>
                                 ID: {nodo.id}
@@ -686,32 +908,38 @@ function App() {
                             </small>
 
 
-                            {/* Padres actuales */}
+                            {/* Relaciones actuales */}
                             <div className="listaPadres">
 
-                                {nodo.padres.map(idPadre => (
+                                {nodo.padres.map(
+                                    idPadre => (
 
-                                    <button
-                                        key={idPadre}
-                                        type="button"
-                                        className="botonPadre"
-                                        title="Quitar relacion"
-                                        onClick={() =>
-                                            quitarRelacion(
-                                                idPadre,
-                                                nodo.id
-                                            )
-                                        }
-                                    >
-                                        {idPadre} ×
-                                    </button>
+                                        <button
+                                            key={idPadre}
 
-                                ))}
+                                            type="button"
+
+                                            className="botonPadre"
+
+                                            title="Quitar relacion"
+
+                                            onClick={() =>
+                                                quitarRelacion(
+                                                    idPadre,
+                                                    nodo.id
+                                                )
+                                            }
+                                        >
+                                            {idPadre} ×
+                                        </button>
+
+                                    )
+                                )}
 
                             </div>
 
 
-                            {/* Seleccionar un nuevo padre */}
+                            {/* Seleccionar nuevo padre */}
                             <div className="configuracionPadres">
 
                                 <label>
@@ -723,10 +951,12 @@ function App() {
                                             padresSeleccionados[nodo.id] ||
                                             ''
                                         }
+
                                         onChange={evento =>
                                             setPadresSeleccionados(
                                                 anterior => ({
                                                     ...anterior,
+
                                                     [nodo.id]:
                                                         evento.target.value
                                                 })
@@ -763,10 +993,13 @@ function App() {
 
                                 <button
                                     type="button"
+
                                     className="botonSecundario"
+
                                     disabled={
                                         !padresSeleccionados[nodo.id]
                                     }
+
                                     onClick={() =>
                                         agregarRelacion(
                                             padresSeleccionados[nodo.id],
@@ -780,10 +1013,12 @@ function App() {
                             </div>
 
 
-                            {/* Renombrar nodo */}
+                            {/* Renombrar */}
                             <button
                                 type="button"
+
                                 className="botonRenombrar"
+
                                 onClick={() =>
                                     renombrarNodo(nodo.id)
                                 }
@@ -792,10 +1027,12 @@ function App() {
                             </button>
 
 
-                            {/* Eliminar nodo */}
+                            {/* Eliminar */}
                             <button
                                 type="button"
+
                                 className="botonEliminar"
+
                                 onClick={() =>
                                     eliminarNodo(nodo.id)
                                 }
@@ -810,7 +1047,7 @@ function App() {
                 </div>
 
 
-                {/* Acciones de la red */}
+                {/* Acciones de red */}
                 <div className="accionesRed">
 
                     <button
@@ -822,7 +1059,9 @@ function App() {
 
                     <button
                         type="button"
+
                         onClick={agregarNodo}
+
                         disabled={
                             redActual.nodos.length >= 10
                         }
@@ -833,17 +1072,21 @@ function App() {
                 </div>
 
 
-                {/* Mensajes de la red */}
+                {/* Mensajes */}
                 {mensaje && (
+
                     <p className="exito">
                         {mensaje}
                     </p>
+
                 )}
 
                 {error && (
+
                     <p className="error">
                         {error}
                     </p>
+
                 )}
 
             </section>
@@ -856,7 +1099,7 @@ function App() {
             />
 
 
-            {/* Panel de consulta probabilistica */}
+            {/* Consulta probabilistica */}
             <section className="panel">
 
                 <h2>Consulta probabilistica</h2>
@@ -864,15 +1107,18 @@ function App() {
                 <div className="campos">
 
 
-                    {/* Variable de consulta */}
+                    {/* Variable consultada */}
                     <label>
 
                         Variable de consulta
 
                         <select
                             value={consulta}
+
                             onChange={evento =>
-                                setConsulta(evento.target.value)
+                                setConsulta(
+                                    evento.target.value
+                                )
                             }
                         >
 
@@ -899,6 +1145,7 @@ function App() {
 
                         <select
                             value={variableEvidencia}
+
                             onChange={evento => {
 
                                 setVariableEvidencia(
@@ -929,20 +1176,23 @@ function App() {
                     </label>
 
 
-                    {/* Estado de evidencia */}
+                    {/* Estado observado */}
                     <label>
 
                         Estado de evidencia
 
                         <select
                             value={estadoEvidencia}
+
                             disabled={!variableEvidencia}
+
                             onChange={evento =>
                                 setEstadoEvidencia(
                                     evento.target.value
                                 )
                             }
                         >
+
                             <option value="Si">
                                 Si
                             </option>
@@ -958,10 +1208,12 @@ function App() {
                 </div>
 
 
-                {/* Ejecutar consulta */}
+                {/* Boton calcular */}
                 <button
                     type="button"
+
                     onClick={calcular}
+
                     disabled={cargando}
                 >
                     {
