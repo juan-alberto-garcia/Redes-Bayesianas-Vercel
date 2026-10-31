@@ -4,26 +4,30 @@ import type {
     RespuestaInferencia
 } from '../tipos/red';
 
-// Datos que guardamos por cada calculo
 export type RegistroConsulta = {
     id: string;
     fecha: string;
     red: RedBayes;
     firmaRed: string;
+
+    // Compatibilidad con el modulo 16
     consulta: string;
     consultaNombre: string;
+
+    // Una o varias variables consultadas
+    consultas: string[];
+
     evidencias: Record<string, string>;
     resultado: RespuestaInferencia;
 };
 
-// Configuracion del historial
 export const LIMITE_HISTORIAL = 30;
 
 const CLAVE_HISTORIAL =
     'redes-bayesianas-idk-historial-v1';
 
-// Identificar una red por su estructura y probabilidades
-// Las posiciones de React Flow no afectan la firma
+
+// Identificar red mediante nodos, relaciones y CPT
 export function crearFirmaRed(red: RedBayes): string {
     return JSON.stringify(
         red.nodos.map(nodo => ({
@@ -35,55 +39,107 @@ export function crearFirmaRed(red: RedBayes): string {
     );
 }
 
-// Recuperar historial guardado en el navegador
+
+// Leer consultas nuevas y antiguas
 export function leerHistorial(): RegistroConsulta[] {
+
     try {
-        const contenido = localStorage.getItem(
+        const guardado = localStorage.getItem(
             CLAVE_HISTORIAL
         );
 
-        if (!contenido) {
+        if (!guardado) {
             return [];
         }
 
-        const registros: unknown = JSON.parse(contenido);
+        const datos: unknown = JSON.parse(guardado);
 
-        if (!Array.isArray(registros)) {
+        if (!Array.isArray(datos)) {
             return [];
         }
 
-        // Ignorar registros incompletos o dañados
-        return registros.filter(
-            (registro): registro is RegistroConsulta => {
+        const registros: RegistroConsulta[] = [];
 
-                if (!registro || typeof registro !== 'object') {
-                    return false;
-                }
+        for (const valor of datos) {
 
-                const dato = registro as Partial<RegistroConsulta>;
-
-                return (
-                    typeof dato.id === 'string' &&
-                    typeof dato.fecha === 'string' &&
-                    typeof dato.firmaRed === 'string' &&
-                    typeof dato.consulta === 'string' &&
-                    typeof dato.consultaNombre === 'string' &&
-                    dato.evidencias !== null &&
-                    typeof dato.evidencias === 'object' &&
-                    Array.isArray(dato.red?.nodos) &&
-                    Array.isArray(dato.resultado?.distribucion) &&
-                    typeof dato.resultado?.probabilidad_evidencia ===
-                        'number'
-                );
+            if (!valor || typeof valor !== 'object') {
+                continue;
             }
-        ).slice(0, LIMITE_HISTORIAL);
+
+            const registro =
+                valor as Partial<RegistroConsulta>;
+
+            // Comprobar datos necesarios
+            if (
+                typeof registro.id !== 'string' ||
+                typeof registro.fecha !== 'string' ||
+                typeof registro.firmaRed !== 'string' ||
+                typeof registro.consulta !== 'string' ||
+                !Array.isArray(registro.red?.nodos) ||
+                !Array.isArray(
+                    registro.resultado?.distribucion
+                ) ||
+                typeof registro.resultado
+                    ?.probabilidad_evidencia !== 'number' ||
+                !registro.evidencias ||
+                typeof registro.evidencias !== 'object'
+            ) {
+                continue;
+            }
+
+            // Los registros del modulo 16 guardaban
+            // una sola variable en registro.consulta
+            const consultas =
+                Array.isArray(registro.consultas) &&
+                registro.consultas.length > 0
+                    ? registro.consultas
+                    : [registro.consulta];
+
+            // Comprobar variables existentes
+            const validas = [
+                ...new Set(consultas)
+            ].filter(id =>
+                typeof id === 'string' &&
+                registro.red!.nodos.some(
+                    nodo => nodo.id === id
+                )
+            );
+
+            if (validas.length === 0) {
+                continue;
+            }
+
+            // Convertir al formato nuevo
+            registros.push({
+                ...(registro as RegistroConsulta),
+
+                consultas: validas,
+                consulta: validas[0],
+
+                consultaNombre: validas.map(id =>
+                    registro.red!.nodos.find(
+                        nodo => nodo.id === id
+                    )?.nombre || id
+                ).join(', ')
+            });
+
+            if (
+                registros.length ===
+                LIMITE_HISTORIAL
+            ) {
+                break;
+            }
+        }
+
+        return registros;
 
     } catch {
         return [];
     }
 }
 
-// Guardar historial completo
+
+// Guardar las consultas en el navegador
 export function guardarHistorial(
     registros: RegistroConsulta[]
 ): boolean {
@@ -91,6 +147,7 @@ export function guardarHistorial(
     try {
         localStorage.setItem(
             CLAVE_HISTORIAL,
+
             JSON.stringify(
                 registros.slice(0, LIMITE_HISTORIAL)
             )
@@ -99,8 +156,7 @@ export function guardarHistorial(
         return true;
 
     } catch {
-        // Si el navegador bloquea el almacenamiento,
-        // los registros siguen disponibles en memoria.
+        // Los registros permanecen en memoria
         return false;
     }
 }

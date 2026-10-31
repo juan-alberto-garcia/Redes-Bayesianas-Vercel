@@ -1,0 +1,369 @@
+
+/* Contenedor principal */
+.editorConsultaConjunta {
+    display: flex;
+    flex-direction: column;
+
+    gap: 18px;
+    margin: 16px 0;
+}
+
+
+/* Grupos de consulta */
+.editorConsultaConjunta .ecc-grupo {
+    min-width: 0;
+
+    padding: 18px;
+
+    border: 1px solid #475569;
+    border-radius: 10px;
+
+    background: #1e293b;
+}
+
+
+/* Titulos */
+.editorConsultaConjunta .ecc-grupo legend {
+    padding: 0 8px;
+
+    color: #f8fafc;
+    font-weight: 700;
+}
+
+
+/* Descripciones */
+.editorConsultaConjunta .ecc-descripcion {
+    margin: 4px 0 16px;
+
+    color: #cbd5e1;
+}
+
+
+/* Botones de modo */
+.editorConsultaConjunta .ecc-modos {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.editorConsultaConjunta .ecc-modo {
+    padding: 11px 18px;
+
+    border: 1px solid #475569;
+    border-radius: 8px;
+
+    background: #0f172a;
+    color: #cbd5e1;
+
+    font-family: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/* Modo activo */
+.editorConsultaConjunta .ecc-modoActivo {
+    border-color: #e11d48;
+
+    background: #e11d48;
+    color: #ffffff;
+}
+
+.editorConsultaConjunta .ecc-modo:hover {
+    border-color: #fb7185;
+}
+
+
+/* Explicacion del modo */
+.editorConsultaConjunta .ecc-ayudaModo {
+    margin: 0 0 14px;
+
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+
+/* Seleccion actual */
+.editorConsultaConjunta .ecc-seleccionActual {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    padding: 12px;
+    margin-bottom: 16px;
+
+    border: 1px solid #475569;
+    border-radius: 8px;
+
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+.editorConsultaConjunta .ecc-seleccionActual span {
+    color: #4ade80;
+    font-weight: 700;
+}
+
+
+/* Advertencia de seleccion */
+.editorConsultaConjunta .ecc-aviso {
+    padding: 12px;
+
+    border: 1px solid #b45309;
+    border-radius: 8px;
+
+    background: #422006;
+    color: #fde68a;
+
+    font-size: 13px;
+}
+
+
+/* Cuadricula de variables */
+.editorConsultaConjunta .ecc-opcionesConsulta {
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 250px), 1fr)
+    );
+
+    gap: 12px;
+}
+
+
+/* Tarjeta individual */
+.editorConsultaConjunta .ecc-tarjeta {
+    display: flex;
+    align-items: stretch;
+
+    min-width: 0;
+
+    border: 1px solid #475569;
+    border-radius: 9px;
+
+    background: #0f172a;
+
+    overflow: hidden;
+}
+
+
+/* Tarjeta seleccionada */
+.editorConsultaConjunta .ecc-tarjetaSeleccionada {
+    border-color: #e11d48;
+
+    background: #321722;
+}
+
+
+/* Boton de variable */
+.editorConsultaConjunta .ecc-variable {
+    appearance: none;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    flex: 1;
+    min-width: 0;
+
+    gap: 10px;
+    padding: 12px;
+
+    border: none;
+    border-radius: 0;
+
+    background: transparent;
+    color: #f8fafc;
+
+    text-align: left;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+
+/* Variable seleccionada */
+.editorConsultaConjunta .ecc-variableActiva {
+    color: #ffffff;
+}
+
+
+/* Indicador visual */
+.editorConsultaConjunta .ecc-indicador {
+    display: grid;
+    place-items: center;
+
+    flex-shrink: 0;
+
+    width: 23px;
+    height: 23px;
+
+    border-radius: 6px;
+
+    background: #334155;
+    color: #ffffff;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+/* Indicador seleccionado */
+.editorConsultaConjunta
+.ecc-variableActiva .ecc-indicador {
+    background: #e11d48;
+}
+
+
+/* Nombre de variable */
+.editorConsultaConjunta .ecc-nombre {
+    overflow-wrap: anywhere;
+}
+
+
+/* Boton Solo esta */
+.editorConsultaConjunta .ecc-solo {
+    appearance: none;
+
+    flex-shrink: 0;
+
+    padding: 8px 10px;
+
+    border: none;
+    border-left: 1px solid #475569;
+    border-radius: 0;
+
+    background: #252b38;
+    color: #cbd5e1;
+
+    font-family: inherit;
+    font-size: 12px;
+
+    cursor: pointer;
+}
+
+.editorConsultaConjunta .ecc-solo:hover {
+    background: #475569;
+    color: #ffffff;
+}
+
+
+/* Accesibilidad por teclado */
+.editorConsultaConjunta button:focus-visible {
+    outline: 2px solid #f8fafc;
+    outline-offset: -3px;
+}
+
+
+/* Cuadricula de evidencias */
+.editorConsultaConjunta .ecc-opcionesEvidencia {
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(min(100%, 240px), 1fr)
+    );
+
+    gap: 12px;
+}
+
+
+/* Tarjeta de evidencia */
+.editorConsultaConjunta .ecc-evidencia {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+    padding: 12px;
+
+    border: 1px solid #475569;
+    border-radius: 8px;
+
+    background: #0f172a;
+    color: #f8fafc;
+}
+
+
+/* Selector de evidencia */
+.editorConsultaConjunta .ecc-evidencia select {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 10px;
+
+    border: 1px solid #64748b;
+    border-radius: 6px;
+
+    background: #252b38;
+    color: #f8fafc;
+
+    color-scheme: dark;
+}
+
+
+/* Resumen */
+.editorConsultaConjunta .ecc-resumen {
+    padding: 16px;
+
+    border: 1px solid #475569;
+    border-radius: 10px;
+
+    background: #1e293b;
+}
+
+.editorConsultaConjunta .ecc-resumen h3 {
+    margin: 0 0 12px;
+    color: #f8fafc;
+}
+
+.editorConsultaConjunta .ecc-resumen p {
+    margin: 8px 0;
+    color: #cbd5e1;
+}
+
+.editorConsultaConjunta .ecc-resumen strong {
+    color: #f8fafc;
+}
+
+
+/* Expresion matematica */
+.editorConsultaConjunta .ecc-expresion {
+    font-size: 17px;
+    font-weight: 700;
+
+    color: #4ade80 !important;
+    overflow-wrap: anywhere;
+}
+
+
+/* Aviso de tabla extensa */
+.editorConsultaConjunta .ecc-advertencia {
+    color: #fbbf24 !important;
+}
+
+
+/* Adaptacion a celulares */
+@media (max-width: 640px) {
+
+    .editorConsultaConjunta .ecc-grupo {
+        padding: 14px;
+    }
+
+    .editorConsultaConjunta .ecc-opcionesConsulta {
+        grid-template-columns: 1fr;
+    }
+
+    .editorConsultaConjunta .ecc-opcionesEvidencia {
+        grid-template-columns: 1fr;
+    }
+}

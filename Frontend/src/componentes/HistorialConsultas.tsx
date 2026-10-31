@@ -7,19 +7,27 @@ import type {
 
 import './HistorialConsultas.css';
 
+
 type Propiedades = {
     registros: RegistroConsulta[];
-    onRecuperar: (registro: RegistroConsulta) => void;
+
+    onRecuperar: (
+        registro: RegistroConsulta
+    ) => void;
+
     onEliminar: (id: string) => void;
+
     onVaciar: () => void;
 };
+
 
 // Convertir una probabilidad a porcentaje
 function porcentaje(valor: number): string {
     return `${(valor * 100).toFixed(2)}%`;
 }
 
-// Crear identificador de una asignacion
+
+// Identificar una asignacion aunque cambie su orden
 function claveAsignacion(
     asignacion: Record<string, string>
 ): string {
@@ -31,35 +39,42 @@ function claveAsignacion(
     );
 }
 
-// Mostrar la consulta en formato P(Q | E)
-function describirConsulta(
-    registro: RegistroConsulta
-): string {
 
-    const evidencia = Object.entries(
-        registro.evidencias
-    ).map(([id, estado]) =>
-        `${id}=${estado}`
-    ).join(', ');
-
-    if (!evidencia) {
-        return `P(${registro.consulta})`;
-    }
-
-    return `P(${registro.consulta} | ${evidencia})`;
-}
-
-// Obtener descripcion de una asignacion
+// Mostrar los estados de un resultado
 function describirAsignacion(
     asignacion: Record<string, string>
 ): string {
 
     return Object.entries(asignacion)
-        .map(([id, estado]) => `${id} = ${estado}`)
+        .map(
+            ([id, estado]) => `${id} = ${estado}`
+        )
         .join(', ');
 }
 
-// Formatear fecha registrada
+
+// Construir la consulta del registro
+function describirConsulta(
+    registro: RegistroConsulta
+): string {
+
+    const variables = registro.consultas.join(', ');
+
+    const evidencia = Object.entries(
+        registro.evidencias
+    )
+        .map(
+            ([id, estado]) => `${id}=${estado}`
+        )
+        .join(', ');
+
+    return evidencia
+        ? `P(${variables} | ${evidencia})`
+        : `P(${variables})`;
+}
+
+
+// Mostrar fecha
 function mostrarFecha(fecha: string): string {
 
     const valor = new Date(fecha);
@@ -83,35 +98,46 @@ export default function HistorialConsultas({
     onVaciar
 }: Propiedades) {
 
-    // Dos registros para comparar
-    const [seleccionados, setSeleccionados] = useState<
-        string[]
-    >([]);
+    // Dos registros seleccionados para comparar
+    const [seleccionados, setSeleccionados] =
+        useState<string[]>([]);
 
-    // Eliminar selecciones que ya no existen
+    // Ignorar registros que hayan sido eliminados
     const seleccionValidos = seleccionados.filter(
-        id => registros.some(registro => registro.id === id)
+        id => registros.some(
+            registro => registro.id === id
+        )
     );
 
-    // Buscar los registros seleccionados
     const registroA = registros.find(
-        registro => registro.id === seleccionValidos[0]
+        registro =>
+            registro.id === seleccionValidos[0]
     );
 
     const registroB = registros.find(
-        registro => registro.id === seleccionValidos[1]
+        registro =>
+            registro.id === seleccionValidos[1]
     );
 
-    // Solo se comparan consultas de la misma red
-    // y de la misma variable
+
+    // Se compara la misma red y las mismas variables
     const comparables = Boolean(
         registroA &&
         registroB &&
+
         registroA.firmaRed === registroB.firmaRed &&
-        registroA.consulta === registroB.consulta
+
+        JSON.stringify(
+            [...registroA.consultas].sort()
+        ) ===
+
+        JSON.stringify(
+            [...registroB.consultas].sort()
+        )
     );
 
-    // Seleccionar un registro para comparar
+
+    // Marcar o desmarcar registro
     function cambiarSeleccion(id: string) {
 
         setSeleccionados(anteriores => {
@@ -123,7 +149,10 @@ export default function HistorialConsultas({
             );
 
             if (validos.includes(id)) {
-                return validos.filter(actual => actual !== id);
+
+                return validos.filter(
+                    actual => actual !== id
+                );
             }
 
             if (validos.length >= 2) {
@@ -134,17 +163,21 @@ export default function HistorialConsultas({
         });
     }
 
-    // Eliminar un registro
+
+    // Eliminar registro
     function eliminarRegistro(id: string) {
 
         setSeleccionados(anteriores =>
-            anteriores.filter(actual => actual !== id)
+            anteriores.filter(
+                actual => actual !== id
+            )
         );
 
         onEliminar(id);
     }
 
-    // Limpiar el historial completo
+
+    // Limpiar todo el historial
     function vaciarHistorial() {
 
         if (registros.length === 0) {
@@ -164,18 +197,25 @@ export default function HistorialConsultas({
         onVaciar();
     }
 
+
     return (
+
         <section className="panel historialConsultas">
 
+            {/* Encabezado */}
             <div className="encabezadoHistorial">
 
                 <div>
-                    <h2>Historial de consultas</h2>
+
+                    <h2>
+                        Historial de consultas
+                    </h2>
 
                     <p>
-                        Consulta resultados anteriores y
-                        compara diferentes evidencias.
+                        Recupera resultados y compara
+                        diferentes evidencias.
                     </p>
+
                 </div>
 
                 <span className="contadorHistorial">
@@ -184,17 +224,20 @@ export default function HistorialConsultas({
 
             </div>
 
+
             {registros.length === 0 ? (
 
                 <p className="historialVacio">
                     Todavia no hay consultas guardadas.
                     Realiza un calculo para agregar
-                    el primer resultado.
+                    el primero.
                 </p>
 
             ) : (
 
                 <>
+
+                    {/* Acciones del historial */}
                     <div className="accionesHistorial">
 
                         <p>
@@ -211,39 +254,49 @@ export default function HistorialConsultas({
 
                     </div>
 
+
+                    {/* Lista de registros */}
                     <div className="listaHistorial">
 
                         {registros.map(registro => (
 
                             <article
-                                key={registro.id}
                                 className="registroHistorial"
+                                key={registro.id}
                             >
 
                                 <div className="datosRegistro">
 
+                                    {/* Seleccion de comparacion */}
                                     <label className="compararRegistro">
 
                                         <input
                                             type="checkbox"
+
                                             checked={
                                                 seleccionValidos.includes(
                                                     registro.id
                                                 )
                                             }
+
                                             disabled={
                                                 seleccionValidos.length >= 2 &&
                                                 !seleccionValidos.includes(
                                                     registro.id
                                                 )
                                             }
+
                                             onChange={() =>
-                                                cambiarSeleccion(registro.id)
+                                                cambiarSeleccion(
+                                                    registro.id
+                                                )
                                             }
                                         />
 
                                         Comparar
+
                                     </label>
+
 
                                     <small>
                                         {mostrarFecha(registro.fecha)}
@@ -253,45 +306,59 @@ export default function HistorialConsultas({
                                         {registro.red.nombre}
                                     </h3>
 
+
+                                    {/* Consulta guardada */}
                                     <p>
-                                        <strong>Consulta:</strong>{' '}
+                                        <strong>
+                                            Consulta:
+                                        </strong>{' '}
+
                                         {describirConsulta(registro)}
                                     </p>
 
                                     <p>
-                                        <strong>Variable:</strong>{' '}
+                                        <strong>
+                                            Variables:
+                                        </strong>{' '}
+
                                         {registro.consultaNombre}
                                     </p>
 
+
+                                    {/* Resultados guardados */}
                                     <p>
-                                        <strong>Resultados:</strong>
+                                        <strong>
+                                            Resultados:
+                                        </strong>
                                     </p>
 
                                     <div className="resumenRegistro">
 
-                                        {registro.resultado.distribucion.map(
-                                            (fila, indice) => (
+                                        {registro.resultado
+                                            .distribucion.map(
+                                                (fila, indice) => (
 
-                                                <div key={indice}>
+                                                    <div key={indice}>
 
-                                                    <span>
-                                                        {describirAsignacion(
-                                                            fila.asignacion
-                                                        )}
-                                                    </span>
+                                                        <span>
+                                                            {describirAsignacion(
+                                                                fila.asignacion
+                                                            )}
+                                                        </span>
 
-                                                    <strong>
-                                                        {porcentaje(
-                                                            fila.probabilidad
-                                                        )}
-                                                    </strong>
+                                                        <strong>
+                                                            {porcentaje(
+                                                                fila.probabilidad
+                                                            )}
+                                                        </strong>
 
-                                                </div>
+                                                    </div>
 
-                                            )
-                                        )}
+                                                )
+                                            )}
 
                                     </div>
+
 
                                     <p>
                                         <strong>
@@ -305,6 +372,8 @@ export default function HistorialConsultas({
 
                                 </div>
 
+
+                                {/* Botones del registro */}
                                 <div className="botonesRegistro">
 
                                     <button
@@ -320,7 +389,9 @@ export default function HistorialConsultas({
                                         type="button"
                                         className="botonEliminarHistorial"
                                         onClick={() =>
-                                            eliminarRegistro(registro.id)
+                                            eliminarRegistro(
+                                                registro.id
+                                            )
                                         }
                                     >
                                         Eliminar
@@ -334,37 +405,50 @@ export default function HistorialConsultas({
 
                     </div>
 
+
                     {/* Comparacion de dos consultas */}
                     {registroA && registroB && (
 
                         <div className="panelComparacion">
 
-                            <h3>Comparacion de consultas</h3>
+                            <h3>
+                                Comparacion de consultas
+                            </h3>
+
 
                             {!comparables ? (
 
                                 <p className="avisoComparacion">
-                                    Para comparar resultados, selecciona
-                                    dos consultas realizadas sobre
-                                    la misma red, con las mismas CPT
-                                    y la misma variable de consulta.
+                                    Selecciona dos consultas con
+                                    la misma red, las mismas CPT
+                                    y el mismo conjunto de
+                                    variables de consulta.
                                 </p>
 
                             ) : (
 
                                 <>
+
                                     <p>
-                                        <strong>Red:</strong>{' '}
+                                        <strong>
+                                            Red:
+                                        </strong>{' '}
+
                                         {registroA.red.nombre}
                                     </p>
+
 
                                     <div className="tablaComparacion">
 
                                         <table>
 
                                             <thead>
+
                                                 <tr>
-                                                    <th>Estado</th>
+
+                                                    <th>
+                                                        Asignacion
+                                                    </th>
 
                                                     <th>
                                                         A:{' '}
@@ -383,8 +467,11 @@ export default function HistorialConsultas({
                                                     <th>
                                                         Diferencia
                                                     </th>
+
                                                 </tr>
+
                                             </thead>
+
 
                                             <tbody>
 
@@ -392,6 +479,7 @@ export default function HistorialConsultas({
                                                     .distribucion.map(
                                                         (filaA, indice) => {
 
+                                                            // Buscar asignacion equivalente
                                                             const filaB =
                                                                 registroB.resultado
                                                                     .distribucion.find(
@@ -404,16 +492,14 @@ export default function HistorialConsultas({
                                                                             )
                                                                     );
 
-                                                            const valorB =
-                                                                filaB?.probabilidad ??
-                                                                0;
-
-                                                            // B menos A en puntos porcentuales
+                                                            // Diferencia B - A
                                                             const diferencia =
-                                                                (
-                                                                    valorB -
-                                                                    filaA.probabilidad
-                                                                ) * 100;
+                                                                filaB
+                                                                    ? (
+                                                                        filaB.probabilidad -
+                                                                        filaA.probabilidad
+                                                                    ) * 100
+                                                                    : null;
 
                                                             return (
 
@@ -433,14 +519,16 @@ export default function HistorialConsultas({
 
                                                                     <td>
                                                                         {filaB
-                                                                            ? porcentaje(valorB)
+                                                                            ? porcentaje(
+                                                                                filaB.probabilidad
+                                                                            )
                                                                             : 'Sin dato'}
                                                                     </td>
 
                                                                     <td>
-                                                                        {filaB
-                                                                            ? `${diferencia >= 0 ? '+' : ''}${diferencia.toFixed(2)} pp`
-                                                                            : '—'}
+                                                                        {diferencia === null
+                                                                            ? '—'
+                                                                            : `${diferencia >= 0 ? '+' : ''}${diferencia.toFixed(2)} pp`}
                                                                     </td>
 
                                                                 </tr>
@@ -455,11 +543,11 @@ export default function HistorialConsultas({
 
                                     </div>
 
+
                                     <p className="notaComparacion">
-                                        La diferencia se expresa en
-                                        puntos porcentuales: B menos A.
-                                        No se ejecuta nuevamente
-                                        la inferencia.
+                                        Diferencia en puntos
+                                        porcentuales: resultado B
+                                        menos resultado A.
                                     </p>
 
                                 </>
