@@ -8,6 +8,10 @@ import GrafoBayesiano from './componentes/GrafoBayesiano';
 import GestorJson from './componentes/GestorJson';
 import EditorEvidencias from './componentes/EditorEvidencias';
 import EditorEstados from './componentes/EditorEstados';
+import SelectorEjemplos from './componentes/SelectorEjemplos';
+
+import { redesEjemplo } from './ejemplos/redesEjemplo';
+import type { EjemploRed } from './ejemplos/redesEjemplo';
 
 import type {
     RedBayes,
@@ -19,85 +23,7 @@ import type {
 import './App.css';
 
 
-// Red de ejemplo
-const redEjemplo: RedBayes = {
-    nombre: 'Lluvia, aspersor y cesped mojado',
-    formato: 1,
-    nodos: [
-        {
-            id: 'A',
-            nombre: 'Lluvia',
-            estados: ['Si', 'No'],
-            padres: [],
-            posicion: { x: 100, y: 100 },
-            tabla: [
-                {
-                    condiciones: {},
-                    probabilidades: {
-                        Si: 0.3,
-                        No: 0.7
-                    }
-                }
-            ]
-        },
-        {
-            id: 'B',
-            nombre: 'Aspersor',
-            estados: ['Si', 'No'],
-            padres: [],
-            posicion: { x: 100, y: 320 },
-            tabla: [
-                {
-                    condiciones: {},
-                    probabilidades: {
-                        Si: 0.4,
-                        No: 0.6
-                    }
-                }
-            ]
-        },
-        {
-            id: 'C',
-            nombre: 'Cesped mojado',
-            estados: ['Si', 'No'],
-            padres: ['A', 'B'],
-            posicion: { x: 470, y: 210 },
-            tabla: [
-                {
-                    condiciones: { A: 'Si', B: 'Si' },
-                    probabilidades: {
-                        Si: 0.99,
-                        No: 0.01
-                    }
-                },
-                {
-                    condiciones: { A: 'Si', B: 'No' },
-                    probabilidades: {
-                        Si: 0.90,
-                        No: 0.10
-                    }
-                },
-                {
-                    condiciones: { A: 'No', B: 'Si' },
-                    probabilidades: {
-                        Si: 0.80,
-                        No: 0.20
-                    }
-                },
-                {
-                    condiciones: { A: 'No', B: 'No' },
-                    probabilidades: {
-                        Si: 0.01,
-                        No: 0.99
-                    }
-                }
-            ]
-        }
-    ]
-};
-
-
-// Limite para evitar tablas excesivamente grandes
+// Limite de filas por tabla CPT
 const LIMITE_FILAS_CPT = 512;
 
 
@@ -129,6 +55,7 @@ function existeCamino(
 
         visitados.add(actual);
 
+        // Buscar los hijos del nodo actual
         for (const nodo of nodos) {
 
             if (nodo.padres.includes(actual)) {
@@ -141,7 +68,7 @@ function existeCamino(
 }
 
 
-// Calcular cantidad de filas necesarias para una CPT
+// Contar las filas necesarias para una CPT
 function contarFilasCpt(
     padres: string[],
     nodos: NodoBayes[]
@@ -157,7 +84,7 @@ function contarFilasCpt(
 
         if (!padre) {
             throw new Error(
-                `No existe el nodo padre ${idPadre}`
+                `No existe el padre ${idPadre}.`
             );
         }
 
@@ -168,7 +95,7 @@ function contarFilasCpt(
 }
 
 
-// Construir tabla CPT con probabilidades uniformes
+// Construir una CPT con probabilidades uniformes
 function construirTabla(
     nodoHijo: NodoBayes,
     padresNuevos: string[],
@@ -177,6 +104,7 @@ function construirTabla(
 
     let combinaciones: Record<string, string>[] = [{}];
 
+    // Generar combinaciones de estados de los padres
     for (const idPadre of padresNuevos) {
 
         const padre = nodos.find(
@@ -185,7 +113,7 @@ function construirTabla(
 
         if (!padre) {
             throw new Error(
-                'No se encontro el nodo padre'
+                `No se encontro el padre ${idPadre}.`
             );
         }
 
@@ -198,11 +126,13 @@ function construirTabla(
         );
     }
 
+    // Todos los estados tienen inicialmente igual probabilidad
     const probabilidadInicial =
         1 / nodoHijo.estados.length;
 
     return combinaciones.map(condiciones => ({
         condiciones,
+
         probabilidades: Object.fromEntries(
             nodoHijo.estados.map(estado => [
                 estado,
@@ -213,35 +143,35 @@ function construirTabla(
 }
 
 
-// Aplicacion principal
+// Componente principal
 function App() {
 
-    // Red actual
-    const [redActual, setRedActual] =
-        useState<RedBayes>(redEjemplo);
+    // Una sola red bayesiana activa
+    const [redActual, setRedActual] = useState<RedBayes>(
+        () => structuredClone(redesEjemplo[0].red)
+    );
 
-    // Versiones para reiniciar componentes al importar
-    const [versionGrafo, setVersionGrafo] =
-        useState(0);
+    // Reiniciar el editor CPT cuando sea necesario
+    const [versionCpt, setVersionCpt] = useState(0);
 
-    const [versionCpt, setVersionCpt] =
-        useState(0);
+    // Conexion con FastAPI
+    const [conexion, setConexion] = useState(
+        'Comprobando...'
+    );
 
-    // Estado del Backend
-    const [conexion, setConexion] =
-        useState('Comprobando...');
-
-    // Consulta
-    const [consulta, setConsulta] =
-        useState('A');
+    // Variable de consulta
+    const [consulta, setConsulta] = useState(
+        redesEjemplo[0].consulta
+    );
 
     // Evidencias multiples
-    const [evidencias, setEvidencias] =
-        useState<Record<string, string>>({
-            C: 'Si'
-        });
+    const [evidencias, setEvidencias] = useState<
+        Record<string, string>
+    >({
+        ...redesEjemplo[0].evidencias
+    });
 
-    // Seleccion de nodos
+    // Nodo seleccionado en React Flow
     const [
         nodoSeleccionado,
         setNodoSeleccionado
@@ -253,21 +183,19 @@ function App() {
         setPadresSeleccionados
     ] = useState<Record<string, string>>({});
 
-    // Resultados y mensajes
+    // Resultados de inferencia
     const [resultado, setResultado] =
         useState<RespuestaInferencia | null>(null);
 
-    const [mensaje, setMensaje] =
-        useState('');
+    // Mensajes
+    const [mensaje, setMensaje] = useState('');
+    const [error, setError] = useState('');
 
-    const [error, setError] =
-        useState('');
-
-    const [cargando, setCargando] =
-        useState(false);
+    // Estado del calculo
+    const [cargando, setCargando] = useState(false);
 
 
-    // Comprobar la conexion con FastAPI
+    // Comprobar conexion con FastAPI
     useEffect(() => {
 
         clienteApi.estado()
@@ -281,7 +209,7 @@ function App() {
     }, []);
 
 
-    // Limpiar los resultados anteriores
+    // Limpiar resultados anteriores
     function limpiarResultados() {
 
         setResultado(null);
@@ -290,12 +218,77 @@ function App() {
     }
 
 
-    // Cambiar variable de consulta
+    // Reemplazar la red actual
+    function reemplazarRed(
+        nuevaRed: RedBayes,
+        nuevaConsulta: string,
+        nuevasEvidencias: Record<string, string>,
+        textoMensaje: string
+    ) {
+
+        // Reemplazar todos los nodos y conexiones
+        setRedActual(nuevaRed);
+
+        // Reiniciar formularios del editor CPT
+        setVersionCpt(anterior => anterior + 1);
+
+        // Configurar nueva consulta
+        setConsulta(nuevaConsulta);
+
+        // Configurar nuevas evidencias
+        setEvidencias({
+            ...nuevasEvidencias
+        });
+
+        // Limpiar selecciones anteriores
+        setNodoSeleccionado(null);
+        setPadresSeleccionados({});
+
+        // Descartar los resultados anteriores
+        setResultado(null);
+        setError('');
+
+        setMensaje(textoMensaje);
+
+        // React Flow permanece montado
+        // y recibe los nuevos datos mediante redActual
+    }
+
+
+    // Importar una red desde JSON
+    function importarRed(nuevaRed: RedBayes) {
+
+        reemplazarRed(
+            nuevaRed,
+            nuevaRed.nodos[0].id,
+            {},
+            `Red "${nuevaRed.nombre}" importada correctamente.`
+        );
+    }
+
+
+    // Cargar un ejemplo del catalogo
+    function cargarEjemplo(ejemplo: EjemploRed) {
+
+        // Crear copia independiente del catalogo
+        const nuevaRed = structuredClone(ejemplo.red);
+
+        // Reemplazar la red activa
+        reemplazarRed(
+            nuevaRed,
+            ejemplo.consulta,
+            ejemplo.evidencias,
+            `Ejemplo "${ejemplo.titulo}" cargado correctamente.`
+        );
+    }
+
+
+    // Cambiar la variable consultada
     function cambiarConsulta(id: string) {
 
         setConsulta(id);
 
-        // La consulta no debe ser evidencia
+        // La consulta no puede ser tambien evidencia
         setEvidencias(anteriores => {
 
             if (
@@ -318,7 +311,7 @@ function App() {
     }
 
 
-    // Cambiar evidencias
+    // Actualizar las evidencias
     function actualizarEvidencias(
         nuevas: Record<string, string>
     ) {
@@ -328,43 +321,21 @@ function App() {
     }
 
 
-    // Importar red desde JSON
-    function importarRed(nuevaRed: RedBayes) {
-
-        setRedActual(nuevaRed);
-
-        // Reiniciar los componentes con estado local
-        setVersionGrafo(anterior => anterior + 1);
-        setVersionCpt(anterior => anterior + 1);
-
-        // Restablecer consulta y evidencias
-        setConsulta(nuevaRed.nodos[0].id);
-        setEvidencias({});
-
-        setNodoSeleccionado(null);
-        setPadresSeleccionados({});
-
-        limpiarResultados();
-
-        setMensaje(
-            `Red "${nuevaRed.nombre}" cargada correctamente.`
-        );
-    }
-
-
-    // Agregar nodo
+    // Agregar un nodo
     function agregarNodo() {
 
+        // Maximo de diez nodos
         if (redActual.nodos.length >= 10) {
 
+            setMensaje('');
             setError(
-                'La red no puede superar los 10 nodos'
+                'La red no puede superar los 10 nodos.'
             );
 
-            setMensaje('');
             return;
         }
 
+        // Buscar un identificador disponible
         let numero = 1;
 
         while (
@@ -375,11 +346,15 @@ function App() {
             numero++;
         }
 
+        // Crear el nuevo nodo
         const nuevoNodo: NodoBayes = {
+
             id: `N${numero}`,
             nombre: `Nodo ${numero}`,
+
             estados: ['Si', 'No'],
             padres: [],
+
             posicion: {
                 x: 100 +
                     (redActual.nodos.length % 3) * 220,
@@ -389,19 +364,23 @@ function App() {
                         redActual.nodos.length / 3
                     ) * 150
             },
+
             tabla: [
                 {
                     condiciones: {},
+
                     probabilidades: {
-                        Si: 0.5,
-                        No: 0.5
+                        Si: 0.50,
+                        No: 0.50
                     }
                 }
             ]
         };
 
+        // Actualizar la red
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: [
                 ...anterior.nodos,
                 nuevoNodo
@@ -412,7 +391,7 @@ function App() {
     }
 
 
-    // Renombrar nodo
+    // Renombrar un nodo
     function renombrarNodo(id: string) {
 
         const nodo = redActual.nodos.find(
@@ -432,18 +411,21 @@ function App() {
             return;
         }
 
+        // Validar el nombre
         if (!nuevoNombre.trim()) {
 
             setMensaje('');
             setError(
-                'El nombre no puede estar vacio'
+                'El nombre no puede estar vacio.'
             );
 
             return;
         }
 
+        // Actualizar nombre
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(actual =>
                 actual.id === id
                     ? {
@@ -458,20 +440,21 @@ function App() {
     }
 
 
-    // Eliminar nodo
+    // Eliminar un nodo
     function eliminarNodo(id: string) {
 
+        // Conservar un minimo de tres nodos
         if (redActual.nodos.length <= 3) {
 
             setMensaje('');
             setError(
-                'La red debe conservar al menos 3 nodos'
+                'La red debe conservar al menos 3 nodos.'
             );
 
             return;
         }
 
-        // No eliminar nodos que tengan hijos
+        // Comprobar si tiene hijos
         const hijos = redActual.nodos.filter(
             nodo => nodo.padres.includes(id)
         );
@@ -480,7 +463,7 @@ function App() {
 
             setMensaje('');
             setError(
-                'Primero debes quitar las relaciones de este nodo'
+                'Primero debes quitar las relaciones de este nodo.'
             );
 
             return;
@@ -494,29 +477,35 @@ function App() {
             return;
         }
 
+        // Eliminar de la lista
         const restantes = redActual.nodos.filter(
             nodo => nodo.id !== id
         );
+
+        // Actualizar la consulta si es necesario
+        const nuevaConsulta = consulta === id
+            ? restantes[0].id
+            : consulta;
 
         setRedActual(anterior => ({
             ...anterior,
             nodos: restantes
         }));
 
+        // Quitar seleccion grafica
         setNodoSeleccionado(actual =>
             actual === id ? null : actual
         );
 
-        if (consulta === id) {
-            setConsulta(restantes[0].id);
-        }
+        setConsulta(nuevaConsulta);
 
-        // Quitar evidencia si el nodo fue eliminado
+        // Eliminar evidencias invalidas
         setEvidencias(anteriores => {
 
             const nuevas = { ...anteriores };
 
             delete nuevas[id];
+            delete nuevas[nuevaConsulta];
 
             return nuevas;
         });
@@ -556,29 +545,40 @@ function App() {
             nodo => nodo.id === idHijo
         );
 
+        // Comprobar que existan
         if (!padre || !hijo) {
 
             setMensaje('');
-            setError('Selecciona un nodo padre valido');
+            setError(
+                'Selecciona un nodo padre valido.'
+            );
+
             return;
         }
 
+        // No permitir relacion consigo mismo
         if (idPadre === idHijo) {
 
             setMensaje('');
             setError(
-                'Un nodo no puede ser su propio padre'
+                'Un nodo no puede ser su propio padre.'
             );
+
             return;
         }
 
+        // No permitir relacion repetida
         if (hijo.padres.includes(idPadre)) {
 
             setMensaje('');
-            setError('Esta relacion ya existe');
+            setError(
+                'Esta relacion ya existe.'
+            );
+
             return;
         }
 
+        // No permitir ciclos dirigidos
         if (
             existeCamino(
                 idHijo,
@@ -589,17 +589,19 @@ function App() {
 
             setMensaje('');
             setError(
-                'No se puede crear la relacion: produciria un ciclo'
+                'No se puede crear la relacion: produciria un ciclo.'
             );
+
             return;
         }
 
+        // Agregar el nuevo padre
         const padresNuevos = [
             ...hijo.padres,
             idPadre
         ];
 
-        // Evitar CPT demasiado grandes
+        // Comprobar tamano de CPT
         const filas = contarFilasCpt(
             padresNuevos,
             redActual.nodos
@@ -609,13 +611,13 @@ function App() {
 
             setMensaje('');
             setError(
-                'La relacion requiere demasiadas filas CPT.'
+                'Esta relacion generaria una CPT demasiado grande.'
             );
 
             return;
         }
 
-        // Avisar que se reiniciara la CPT del hijo
+        // Avisar que se reiniciaran probabilidades
         const confirmar = window.confirm(
             'La tabla CPT del nodo hijo se reiniciara ' +
             'con probabilidades uniformes. ¿Continuar?'
@@ -625,14 +627,17 @@ function App() {
             return;
         }
 
+        // Generar nueva CPT
         const tablaNueva = construirTabla(
             hijo,
             padresNuevos,
             redActual.nodos
         );
 
+        // Guardar la relacion
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idHijo
                     ? {
@@ -644,6 +649,7 @@ function App() {
             )
         }));
 
+        // Limpiar selector utilizado
         setPadresSeleccionados(anteriores => ({
             ...anteriores,
             [idHijo]: ''
@@ -670,6 +676,7 @@ function App() {
             return;
         }
 
+        // Confirmar eliminacion
         const confirmar = window.confirm(
             'Se eliminara la relacion y se reiniciara ' +
             'la tabla CPT del hijo. ¿Continuar?'
@@ -679,18 +686,22 @@ function App() {
             return;
         }
 
+        // Quitar padre
         const padresNuevos = hijo.padres.filter(
             padre => padre !== idPadre
         );
 
+        // Reconstruir tabla
         const tablaNueva = construirTabla(
             hijo,
             padresNuevos,
             redActual.nodos
         );
 
+        // Guardar cambios
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idHijo
                     ? {
@@ -706,7 +717,7 @@ function App() {
     }
 
 
-    // Guardar una CPT editada
+    // Guardar tabla CPT editada
     function guardarCpt(
         idNodo: string,
         tablaNueva: FilaProbabilidad[]
@@ -714,6 +725,7 @@ function App() {
 
         setRedActual(anterior => ({
             ...anterior,
+
             nodos: anterior.nodos.map(nodo =>
                 nodo.id === idNodo
                     ? {
@@ -728,7 +740,7 @@ function App() {
     }
 
 
-    // Personalizar los estados de un nodo
+    // Personalizar estados de un nodo
     function guardarEstados(
         idNodo: string,
         estados: string[]
@@ -741,24 +753,28 @@ function App() {
             actual => actual.id === idNodo
         );
 
+        // Comprobar que exista
         if (!nodo) {
+
             return {
                 correcto: false,
                 mensaje: 'El nodo seleccionado no existe.'
             };
         }
 
+        // Comprobar cantidad de estados
         if (
             estados.length < 2 ||
             estados.length > 6
         ) {
+
             return {
                 correcto: false,
                 mensaje: 'Se requieren entre 2 y 6 estados.'
             };
         }
 
-        // Crear copia con los nuevos estados
+        // Crear copia de nodos con estados nuevos
         const nodosConEstados = redActual.nodos.map(
             actual =>
                 actual.id === idNodo
@@ -769,14 +785,14 @@ function App() {
                     : actual
         );
 
-        // El nodo y sus hijos necesitan nuevas CPT
+        // Buscar nodo afectado e hijos directos
         const afectados = nodosConEstados.filter(
             actual =>
                 actual.id === idNodo ||
                 actual.padres.includes(idNodo)
         );
 
-        // Verificar cantidad de combinaciones
+        // Verificar cantidad de filas de CPT
         for (const afectado of afectados) {
 
             const filas = contarFilasCpt(
@@ -788,6 +804,7 @@ function App() {
 
                 return {
                     correcto: false,
+
                     mensaje:
                         `El cambio generaria ${filas} filas ` +
                         `en la CPT de ${afectado.nombre}. ` +
@@ -796,7 +813,7 @@ function App() {
             }
         }
 
-        // Describir las consecuencias
+        // Preparar mensaje de confirmacion
         const nombresHijos = afectados
             .filter(actual => actual.id !== idNodo)
             .map(actual => actual.nombre);
@@ -815,9 +832,8 @@ function App() {
 
         advertencia += '\n\n¿Deseas continuar?';
 
-        const confirmar = window.confirm(advertencia);
-
-        if (!confirmar) {
+        // Confirmar cambios
+        if (!window.confirm(advertencia)) {
 
             return {
                 correcto: false,
@@ -825,20 +841,21 @@ function App() {
             };
         }
 
-        // Reconstruir solo las CPT afectadas
+        // Construir CPT nuevas de los nodos afectados
         const nodosActualizados = nodosConEstados.map(
             actual => {
 
-                const debeActualizar =
+                const afectado =
                     actual.id === idNodo ||
                     actual.padres.includes(idNodo);
 
-                if (!debeActualizar) {
+                if (!afectado) {
                     return actual;
                 }
 
                 return {
                     ...actual,
+
                     tabla: construirTabla(
                         actual,
                         actual.padres,
@@ -848,13 +865,13 @@ function App() {
             }
         );
 
-        // Guardar la red modificada
+        // Guardar cambios en la red
         setRedActual(anterior => ({
             ...anterior,
             nodos: nodosActualizados
         }));
 
-        // Quitar evidencia si el estado observado ya no existe
+        // Revisar si la evidencia sigue siendo valida
         setEvidencias(anteriores => {
 
             if (
@@ -866,9 +883,7 @@ function App() {
                 return anteriores;
             }
 
-            if (
-                estados.includes(anteriores[idNodo])
-            ) {
+            if (estados.includes(anteriores[idNodo])) {
                 return anteriores;
             }
 
@@ -879,15 +894,14 @@ function App() {
             return nuevas;
         });
 
-        // Reiniciar el formulario CPT
+        // Reiniciar editor CPT
         setVersionCpt(anterior => anterior + 1);
 
-        // Invalidar resultados calculados antes del cambio
         limpiarResultados();
 
         const mensajeExito =
             `Estados de "${nodo.nombre}" actualizados. ` +
-            'Revisa las probabilidades CPT.';
+            'Revisa las tablas CPT.';
 
         setMensaje(mensajeExito);
 
@@ -898,7 +912,7 @@ function App() {
     }
 
 
-    // Guardar posiciones al mover nodos
+    // Guardar posiciones de React Flow
     function moverNodos(
         movimientos: {
             id: string;
@@ -916,10 +930,11 @@ function App() {
             ])
         );
 
-        setRedActual(anterior => ({
-            ...anterior,
+        setRedActual(anterior => {
 
-            nodos: anterior.nodos.map(nodo => {
+            let huboCambios = false;
+
+            const nodos = anterior.nodos.map(nodo => {
 
                 const posicion = posiciones.get(nodo.id);
 
@@ -927,6 +942,7 @@ function App() {
                     return nodo;
                 }
 
+                // No actualizar si la posicion es identica
                 if (
                     nodo.posicion.x === posicion.x &&
                     nodo.posicion.y === posicion.y
@@ -934,16 +950,28 @@ function App() {
                     return nodo;
                 }
 
+                huboCambios = true;
+
                 return {
                     ...nodo,
                     posicion
                 };
-            })
-        }));
+            });
+
+            // Evitar renders innecesarios
+            if (!huboCambios) {
+                return anterior;
+            }
+
+            return {
+                ...anterior,
+                nodos
+            };
+        });
     }
 
 
-    // Validar red con FastAPI
+    // Validar red mediante FastAPI
     async function validar() {
 
         setError('');
@@ -961,13 +989,13 @@ function App() {
             setError(
                 problema instanceof Error
                     ? problema.message
-                    : 'Error de validacion'
+                    : 'Error de validacion.'
             );
         }
     }
 
 
-    // Ejecutar inferencia con multiples evidencias
+    // Calcular probabilidades
     async function calcular() {
 
         setCargando(true);
@@ -976,6 +1004,7 @@ function App() {
 
         try {
 
+            // Consultar mediante FastAPI
             const respuesta = await clienteApi.inferir(
                 redActual,
                 [consulta],
@@ -990,10 +1019,11 @@ function App() {
             setError(
                 problema instanceof Error
                     ? problema.message
-                    : 'Error de inferencia'
+                    : 'Error de inferencia.'
             );
 
         } finally {
+
             setCargando(false);
         }
     }
@@ -1018,9 +1048,14 @@ function App() {
             </header>
 
 
-            {/* Grafo interactivo */}
+            {/* Catalogo de ejemplos */}
+            <SelectorEjemplos
+                onCargar={cargarEjemplo}
+            />
+
+
+            {/* Unico editor grafico de la aplicacion */}
             <GrafoBayesiano
-                key={versionGrafo}
                 red={redActual}
                 seleccionado={nodoSeleccionado}
                 onSeleccionar={setNodoSeleccionado}
@@ -1030,14 +1065,14 @@ function App() {
             />
 
 
-            {/* Guardar y cargar redes JSON */}
+            {/* Importar y exportar JSON */}
             <GestorJson
                 red={redActual}
                 onImportar={importarRed}
             />
 
 
-            {/* Panel de administracion de la red */}
+            {/* Administracion de nodos */}
             <section className="panel">
 
                 <h2>Red bayesiana</h2>
@@ -1059,7 +1094,9 @@ function App() {
                             key={nodo.id}
                         >
 
-                            <strong>{nodo.nombre}</strong>
+                            <strong>
+                                {nodo.nombre}
+                            </strong>
 
                             <small>
                                 ID: {nodo.id}
@@ -1079,7 +1116,7 @@ function App() {
                             </small>
 
 
-                            {/* Relaciones actuales */}
+                            {/* Padres actuales */}
                             <div className="listaPadres">
 
                                 {nodo.padres.map(idPadre => (
@@ -1105,7 +1142,7 @@ function App() {
                             </div>
 
 
-                            {/* Selector para agregar padres */}
+                            {/* Crear relaciones */}
                             <div className="configuracionPadres">
 
                                 <label>
@@ -1122,6 +1159,7 @@ function App() {
                                             setPadresSeleccionados(
                                                 anteriores => ({
                                                     ...anteriores,
+
                                                     [nodo.id]:
                                                         evento.target.value
                                                 })
@@ -1209,7 +1247,7 @@ function App() {
                 </div>
 
 
-                {/* Acciones sobre la red */}
+                {/* Acciones de red */}
                 <div className="accionesRed">
 
                     <button
@@ -1222,6 +1260,7 @@ function App() {
                     <button
                         type="button"
                         onClick={agregarNodo}
+
                         disabled={
                             redActual.nodos.length >= 10
                         }
@@ -1234,28 +1273,32 @@ function App() {
 
                 {/* Mensajes */}
                 {mensaje && (
+
                     <p className="exito">
                         {mensaje}
                     </p>
+
                 )}
 
                 {error && (
+
                     <p className="error">
                         {error}
                     </p>
+
                 )}
 
             </section>
 
 
-            {/* Personalizacion de estados */}
+            {/* Editor de estados */}
             <EditorEstados
                 red={redActual}
                 onGuardar={guardarEstados}
             />
 
 
-            {/* Editor de probabilidades CPT */}
+            {/* Editor de tablas CPT */}
             <EditorCpt
                 key={versionCpt}
                 red={redActual}
@@ -1276,6 +1319,7 @@ function App() {
 
                         <select
                             value={consulta}
+
                             onChange={evento =>
                                 cambiarConsulta(
                                     evento.target.value
@@ -1301,7 +1345,7 @@ function App() {
                 </div>
 
 
-                {/* Editor de multiples evidencias */}
+                {/* Multiples evidencias */}
                 <EditorEvidencias
                     red={redActual}
                     consulta={consulta}
@@ -1310,7 +1354,7 @@ function App() {
                 />
 
 
-                {/* Boton de inferencia */}
+                {/* Ejecutar inferencia */}
                 <button
                     type="button"
                     onClick={calcular}
@@ -1326,7 +1370,7 @@ function App() {
             </section>
 
 
-            {/* Resultados de inferencia */}
+            {/* Resultados */}
             {resultado && (
 
                 <section className="panel">

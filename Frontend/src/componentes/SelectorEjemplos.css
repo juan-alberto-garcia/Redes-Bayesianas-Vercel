@@ -1,0 +1,103 @@
+
+/* Catalogo de redes */
+.catalogoEjemplos {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Selector de ejemplos */
+.selectorEjemplos {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    width: 100%;
+    max-width: 600px;
+}
+
+.selectorEjemplos select {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px 14px;
+
+    color: #f8fafc;
+    background: #252b38;
+
+    border: 1px solid #64748b;
+    border-radius: 8px;
+
+    font-family: inherit;
+    font-size: 15px;
+
+    color-scheme: dark;
+}
+
+.selectorEjemplos select:focus {
+    outline: none;
+    border-color: #fb7185;
+}
+
+/* Informacion de la red */
+.detallesEjemplo {
+    padding: 18px;
+
+    background: #1e293b;
+
+    border: 1px solid #475569;
+    border-radius: 10px;
+}
+
+.detallesEjemplo h3 {
+    margin: 0 0 12px;
+
+    color: #f8fafc;
+    font-size: 19px;
+}
+
+.detallesEjemplo p {
+    margin: 8px 0;
+
+    color: #cbd5e1;
+    line-height: 1.6;
+}
+
+.detallesEjemplo strong {
+    color: #f8fafc;
+}
+
+/* Referencia de los ejercicios oficiales */
+.referenciaEjemplo {
+    margin-top: 16px;
+    padding-top: 12px;
+
+    border-top: 1px solid #475569;
+}
+
+.resultadoReferencia {
+    color: #4ade80;
+    font-weight: 700;
+    font-size: 17px;
+}
+
+/* Boton cargar */
+.catalogoEjemplos > button {
+    align-self: flex-start;
+}
+
+/* Pantallas pequenas */
+@media (max-width: 640px) {
+
+    .selectorEjemplos {
+        max-width: 100%;
+    }
+
+    .catalogoEjemplos > button {
+        width: 100%;
+    }
+
+    .detallesEjemplo {
+        padding: 14px;
+    }
+}
