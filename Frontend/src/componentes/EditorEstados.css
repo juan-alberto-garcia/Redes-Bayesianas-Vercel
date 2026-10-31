@@ -1,0 +1,87 @@
+
+/* Editor de estados */
+.editorEstados {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Campos del formulario */
+.campoEstados {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    max-width: 600px;
+}
+
+.campoEstados select,
+.campoEstados textarea {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px 14px;
+
+    color: #f8fafc;
+    background: #252b38;
+
+    border: 1px solid #64748b;
+    border-radius: 8px;
+
+    font-size: 15px;
+    font-family: inherit;
+
+    color-scheme: dark;
+}
+
+.campoEstados textarea {
+    min-height: 130px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.campoEstados select:focus,
+.campoEstados textarea:focus {
+    outline: none;
+    border-color: #fb7185;
+}
+
+/* Instrucciones */
+.ayudaEstados {
+    margin: 0;
+    color: #a9b9d2;
+    font-size: 13px;
+}
+
+/* Advertencia */
+.avisoEstados {
+    padding: 16px;
+    background: #27202a;
+    border: 1px solid #854d59;
+    border-radius: 10px;
+}
+
+.avisoEstados strong {
+    color: #fda4af;
+}
+
+.avisoEstados p {
+    margin: 8px 0 0;
+    color: #e2e8f0;
+    font-size: 14px;
+}
+
+/* Boton guardar */
+.editorEstados > button {
+    align-self: flex-start;
+}
+
+@media (max-width: 640px) {
+    .campoEstados {
+        max-width: 100%;
+    }
+
+    .editorEstados > button {
+        width: 100%;
+    }
+}
