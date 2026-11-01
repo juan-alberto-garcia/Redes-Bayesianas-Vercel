@@ -1,0 +1,189 @@
+
+/* Contenedor interactivo */
+.pi-desplegable {
+    margin-top: 18px;
+    padding: 14px;
+
+    border: 1px solid #475569;
+    border-radius: 8px;
+}
+
+.pi-desplegable summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+
+/* Procedimiento */
+.pi-contenedor {
+    display: flex;
+    flex-direction: column;
+
+    gap: 14px;
+    margin-top: 14px;
+}
+
+
+/* Cada etapa matematica */
+.pi-paso {
+    padding: 12px;
+
+    border: 1px solid #475569;
+    border-radius: 8px;
+
+    break-inside: auto;
+}
+
+.pi-paso h3,
+.pi-factor h4 {
+    margin: 0 0 8px;
+}
+
+.pi-paso p {
+    margin: 6px 0;
+}
+
+
+/* Resumen de factores */
+.pi-resumenFactores {
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(180px, 1fr)
+    );
+
+    gap: 4px 12px;
+}
+
+
+/* Tablas de factores */
+.pi-factor {
+    margin: 12px 0;
+}
+
+.pi-variables {
+    font-size: 0.9em;
+}
+
+.pi-tablaContenedor {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.pi-tabla {
+    width: 100%;
+    border-collapse: collapse;
+
+    font-size: 0.88em;
+}
+
+.pi-tabla th,
+.pi-tabla td {
+    padding: 6px 8px;
+
+    border: 1px solid #64748b;
+    text-align: left;
+}
+
+.pi-tabla th {
+    background: rgba(148, 163, 184, 0.2);
+}
+
+.pi-formula {
+    font-weight: 700;
+}
+
+.pi-aviso {
+    margin: 12px 0;
+    color: #fbbf24;
+}
+
+
+/* Presentacion dentro del PDF */
+@media print {
+
+    .ri-reporte .pi-contenedor {
+        display: block;
+
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 9pt;
+        color: #0f172a;
+    }
+
+    .ri-reporte .pi-paso {
+        margin: 0 0 12px;
+        padding: 0;
+
+        border: none;
+        border-radius: 0;
+    }
+
+    .ri-reporte .pi-paso h3,
+    .ri-reporte .pi-factor h4 {
+        break-after: avoid;
+        page-break-after: avoid;
+
+        color: #0f172a;
+    }
+
+    .ri-reporte .pi-factor {
+        margin: 8px 0 13px;
+    }
+
+    .ri-reporte .pi-tabla {
+        font-size: 8pt;
+    }
+
+    .ri-reporte .pi-tabla th,
+    .ri-reporte .pi-tabla td {
+        border: 1px solid #aeb8c4;
+        padding: 4px 6px;
+
+        background: #ffffff;
+    }
+
+    .ri-reporte .pi-tabla thead {
+        display: table-header-group;
+    }
+
+    .ri-reporte .pi-tabla tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .ri-reporte .pi-tablaContenedor {
+        overflow: visible;
+    }
+
+    .ri-reporte .pi-aviso {
+        color: #92400e;
+    }
+    @media print {
+    .ri-reporte .pi-paso:last-child {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .ri-reporte .pi-factor {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+@media print {
+    .ri-reporte .pi-productoFinal {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+}
+
+/* Evitar separar el encabezado de su primer factor */
+@media print {
+
+    .ri-reporte .pi-inicioEliminacion {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+}
+}
