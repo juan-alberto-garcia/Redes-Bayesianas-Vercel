@@ -1,12 +1,21 @@
+
 services:
   servidor:
     build:
-      context: ./servidor
+      context: ./Backend
       dockerfile: Dockerfile
     ports:
-      - "127.0.0.1:8082:8000"
-    
+      - "127.0.0.1:8083:8000"
     environment:
-      - PYTHONUNBUFFERED="1"
-    
+      PYTHONUNBUFFERED: "1"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:8084:80"
+    depends_on:
+      - servidor
     restart: unless-stopped

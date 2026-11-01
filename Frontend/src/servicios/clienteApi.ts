@@ -6,7 +6,9 @@ import type {
 
 
 // Direccion del servidor
-const baseApi = 'http://localhost:8000';
+const baseApi = import.meta.env.DEV
+  ? 'http://localhost:8000'
+  : '';
 
 
 // Realizar solicitudes HTTP

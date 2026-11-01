@@ -7,6 +7,10 @@ import type {
 
 import ProcedimientoInferencia from './ProcedimientoInferencia';
 
+// Logotipos institucionales
+import logoFie from '../assets/FIE.png';
+import logoUmsnh from '../assets/UMSNH.png';
+
 import './ReporteImpresion.css';
 
 
@@ -18,16 +22,14 @@ type Propiedades = {
 };
 
 
-// Dimensiones de los nodos
+// Dimensiones de los nodos del diagrama
 const ANCHO_NODO = 150;
 const ALTO_NODO = 64;
 const MARGEN = 45;
 
 
-// Dividir nombres largos
-function partirNombre(
-    nombre: string
-): string[] {
+// Dividir nombres largos en dos lineas
+function partirNombre(nombre: string): string[] {
 
     const palabras = nombre.trim().split(/\s+/);
     const lineas: string[] = [''];
@@ -44,11 +46,8 @@ function partirNombre(
             propuesta.length <= 22 ||
             lineas.length === 2
         ) {
-
             lineas[ultima] = propuesta;
-
         } else {
-
             lineas.push(palabra);
         }
     }
@@ -57,7 +56,7 @@ function partirNombre(
 }
 
 
-// Calcular borde de nodo para conectar flechas
+// Calcular donde la flecha toca el borde del nodo
 function puntoBorde(
     origen: { x: number; y: number },
     destino: { x: number; y: number }
@@ -67,7 +66,6 @@ function puntoBorde(
     const dy = destino.y - origen.y;
 
     if (dx === 0 && dy === 0) {
-
         return {
             x: origen.x,
             y: origen.y
@@ -91,7 +89,7 @@ function puntoBorde(
 }
 
 
-// Diagrama SVG independiente de React Flow
+// Diagrama para imprimir sin depender de React Flow
 function DiagramaImprimible({
     nodos,
     consultas,
@@ -105,7 +103,6 @@ function DiagramaImprimible({
     const posiciones = new Map(
         nodos.map(nodo => [
             nodo.id,
-
             {
                 x: nodo.posicion.x,
                 y: nodo.posicion.y
@@ -155,16 +152,9 @@ function DiagramaImprimible({
 
         <svg
             className="ri-diagrama"
-
-            viewBox={
-                `${izquierda} ${arriba} ${ancho} ${alto}`
-            }
-
+            viewBox={`${izquierda} ${arriba} ${ancho} ${alto}`}
             role="img"
-
-            aria-label={
-                'Grafo dirigido de la red bayesiana'
-            }
+            aria-label="Grafo dirigido de la red bayesiana"
         >
 
             <defs>
@@ -189,47 +179,31 @@ function DiagramaImprimible({
             </defs>
 
 
-            {/* Relaciones dirigidas */}
+            {/* Dibujar relaciones dirigidas */}
             {nodos.flatMap(hijo =>
 
                 hijo.padres.map(idPadre => {
 
-                    const origen = posiciones.get(
-                        idPadre
-                    );
-
-                    const destino = posiciones.get(
-                        hijo.id
-                    );
+                    const origen = posiciones.get(idPadre);
+                    const destino = posiciones.get(hijo.id);
 
                     if (!origen || !destino) {
                         return null;
                     }
 
-                    const inicio = puntoBorde(
-                        origen,
-                        destino
-                    );
-
-                    const fin = puntoBorde(
-                        destino,
-                        origen
-                    );
+                    const inicio = puntoBorde(origen, destino);
+                    const fin = puntoBorde(destino, origen);
 
                     return (
 
                         <line
                             key={`${idPadre}-${hijo.id}`}
-
                             x1={inicio.x}
                             y1={inicio.y}
-
                             x2={fin.x}
                             y2={fin.y}
-
                             stroke="#334155"
                             strokeWidth="2"
-
                             markerEnd="url(#ri-flecha)"
                         />
 
@@ -238,7 +212,7 @@ function DiagramaImprimible({
             )}
 
 
-            {/* Nodos */}
+            {/* Dibujar los nodos */}
             {nodos.map(nodo => {
 
                 const consultado =
@@ -265,21 +239,11 @@ function DiagramaImprimible({
                     <g key={nodo.id}>
 
                         <rect
-                            x={
-                                nodo.posicion.x -
-                                ANCHO_NODO / 2
-                            }
-
-                            y={
-                                nodo.posicion.y -
-                                ALTO_NODO / 2
-                            }
-
+                            x={nodo.posicion.x - ANCHO_NODO / 2}
+                            y={nodo.posicion.y - ALTO_NODO / 2}
                             width={ANCHO_NODO}
                             height={ALTO_NODO}
-
                             rx="7"
-
                             fill={color}
                             stroke="#334155"
                             strokeWidth="1.5"
@@ -287,54 +251,39 @@ function DiagramaImprimible({
 
                         <text
                             x={nodo.posicion.x}
-
                             y={
                                 nodo.posicion.y -
                                 (lineas.length === 2 ? 14 : 7)
                             }
-
                             textAnchor="middle"
-
                             fontSize="12"
                             fontWeight="700"
-
                             fill="#0f172a"
                         >
 
-                            {lineas.map(
-                                (linea, indice) => (
+                            {lineas.map((linea, indice) => (
 
-                                    <tspan
-                                        key={indice}
+                                <tspan
+                                    key={indice}
+                                    x={nodo.posicion.x}
+                                    dy={indice === 0 ? 0 : 14}
+                                    textLength={
+                                        linea.length > 23
+                                            ? ANCHO_NODO - 14
+                                            : undefined
+                                    }
+                                    lengthAdjust="spacingAndGlyphs"
+                                >
+                                    {linea}
+                                </tspan>
 
-                                        x={nodo.posicion.x}
-
-                                        dy={
-                                            indice === 0
-                                                ? 0
-                                                : 14
-                                        }
-
-                                        textLength={
-                                            linea.length > 23
-                                                ? ANCHO_NODO - 14
-                                                : undefined
-                                        }
-
-                                        lengthAdjust="spacingAndGlyphs"
-                                    >
-                                        {linea}
-                                    </tspan>
-
-                                )
-                            )}
+                            ))}
 
                         </text>
 
                         <text
                             x={nodo.posicion.x}
                             y={nodo.posicion.y + 22}
-
                             textAnchor="middle"
                             fontSize="10"
                             fill="#334155"
@@ -352,7 +301,7 @@ function DiagramaImprimible({
 }
 
 
-// Reporte completo de impresion
+// Reporte imprimible completo
 export default function ReporteImpresion({
     red,
     consultas,
@@ -360,22 +309,24 @@ export default function ReporteImpresion({
     resultado
 }: Propiedades) {
 
-    const fecha = new Date().toLocaleString(
-        'es-MX'
-    );
+    // Fecha sin hora
+    const fecha = new Date().toLocaleDateString('es-MX');
 
+    // Suma de las probabilidades calculadas
     const suma = resultado.distribucion.reduce(
         (acumulado, fila) =>
             acumulado + fila.probabilidad,
         0
     );
 
+    // Contar relaciones dirigidas
     const relaciones = red.nodos.reduce(
         (total, nodo) =>
             total + nodo.padres.length,
         0
     );
 
+    // Construir texto de las evidencias
     const textoEvidencia = Object.entries(
         evidencias
     )
@@ -385,6 +336,7 @@ export default function ReporteImpresion({
         )
         .join(', ');
 
+    // Construir expresion de consulta
     const expresion = textoEvidencia
         ? `P(${consultas.join(', ')} | ${textoEvidencia})`
         : `P(${consultas.join(', ')})`;
@@ -393,45 +345,74 @@ export default function ReporteImpresion({
 
         <article
             className="ri-reporte"
-
-            aria-label={
-                'Reporte imprimible de red bayesiana'
-            }
+            aria-label="Reporte imprimible de red bayesiana"
         >
 
-            {/* Encabezado */}
+            {/* Encabezado con logos institucionales */}
             <header className="ri-encabezado">
 
-                <p className="ri-asignatura">
-                    MODELOS PROBABILISTAS
-                </p>
+                {/* Logo FIE - izquierda */}
+                <div className="ri-logo ri-logoIzquierdo">
 
-                <h1>
-                    Reporte de red bayesiana
-                </h1>
+                    <img
+                        src={logoFie}
+                        alt="Facultad de Ingenieria Electrica"
+                    />
 
-                <p>
-                    <strong>Red:</strong>{' '}
-                    {red.nombre}
-                </p>
+                </div>
 
-                <p>
-                    <strong>Generado:</strong>{' '}
-                    {fecha}
-                </p>
 
-                <p>
-                    <strong>Nodos:</strong>{' '}
-                    {red.nodos.length}
+                {/* Informacion central */}
+                <div className="ri-encabezadoCentro">
 
-                    {' · '}
+                    <p className="ri-institucion">
+                        UNIVERSIDAD MICHOACANA
+                        DE SAN NICOLÁS DE HIDALGO
+                    </p>
 
-                    <strong>
-                        Relaciones dirigidas:
-                    </strong>{' '}
+                    <p className="ri-asignatura">
+                        MODELOS PROBABILISTAS
+                    </p>
 
-                    {relaciones}
-                </p>
+                    <h1>
+                        Reporte de red bayesiana
+                    </h1>
+
+                    <p>
+                        <strong>Red:</strong>{' '}
+                        {red.nombre}
+                    </p>
+
+                    <p>
+                        <strong>Fecha:</strong>{' '}
+                        {fecha}
+                    </p>
+
+                    <p>
+                        <strong>Nodos:</strong>{' '}
+                        {red.nodos.length}
+
+                        {' · '}
+
+                        <strong>
+                            Relaciones dirigidas:
+                        </strong>{' '}
+
+                        {relaciones}
+                    </p>
+
+                </div>
+
+
+                {/* Logo UMSNH - derecha */}
+                <div className="ri-logo ri-logoDerecho">
+
+                    <img
+                        src={logoUmsnh}
+                        alt="Universidad Michoacana de San Nicolas de Hidalgo"
+                    />
+
+                </div>
 
             </header>
 
@@ -458,7 +439,7 @@ export default function ReporteImpresion({
             </section>
 
 
-            {/* 2. Variables y relaciones */}
+            {/* 2. Variables y dependencias */}
             <section className="ri-seccion">
 
                 <h2>
@@ -482,23 +463,16 @@ export default function ReporteImpresion({
 
                             <tr key={nodo.id}>
 
-                                <td>
-                                    {nodo.id}
-                                </td>
+                                <td>{nodo.id}</td>
 
-                                <td>
-                                    {nodo.nombre}
-                                </td>
+                                <td>{nodo.nombre}</td>
 
                                 <td>
                                     {nodo.estados.join(', ')}
                                 </td>
 
                                 <td>
-                                    {
-                                        nodo.padres.join(', ') ||
-                                        'Ninguno'
-                                    }
+                                    {nodo.padres.join(', ') || 'Ninguno'}
                                 </td>
 
                             </tr>
@@ -527,8 +501,7 @@ export default function ReporteImpresion({
                     >
 
                         <h3>
-                            {nodo.nombre}
-                            {' '}({nodo.id})
+                            {nodo.nombre} ({nodo.id})
                         </h3>
 
                         <table className="ri-tabla">
@@ -557,38 +530,36 @@ export default function ReporteImpresion({
 
                             <tbody>
 
-                                {nodo.tabla.map(
-                                    (fila, indice) => (
+                                {nodo.tabla.map((fila, indice) => (
 
-                                        <tr key={indice}>
+                                    <tr key={indice}>
 
-                                            {nodo.padres.map(idPadre => (
+                                        {nodo.padres.map(idPadre => (
 
-                                                <td key={idPadre}>
-                                                    {
-                                                        fila.condiciones[idPadre] ??
-                                                        '—'
-                                                    }
-                                                </td>
+                                            <td key={idPadre}>
+                                                {
+                                                    fila.condiciones[idPadre] ??
+                                                    '—'
+                                                }
+                                            </td>
 
-                                            ))}
+                                        ))}
 
-                                            {nodo.estados.map(estado => (
+                                        {nodo.estados.map(estado => (
 
-                                                <td key={estado}>
-                                                    {
-                                                        fila.probabilidades[estado]
-                                                            ?.toFixed(6) ??
-                                                        '—'
-                                                    }
-                                                </td>
+                                            <td key={estado}>
+                                                {
+                                                    fila.probabilidades[estado]
+                                                        ?.toFixed(6) ??
+                                                    '—'
+                                                }
+                                            </td>
 
-                                            ))}
+                                        ))}
 
-                                        </tr>
+                                    </tr>
 
-                                    )
-                                )}
+                                ))}
 
                             </tbody>
 
@@ -601,7 +572,7 @@ export default function ReporteImpresion({
             </section>
 
 
-            {/* 4. Configuracion */}
+            {/* 4. Configuracion de consulta */}
             <section className="ri-seccion">
 
                 <h2>
@@ -616,15 +587,11 @@ export default function ReporteImpresion({
                     <strong>
                         Variables consultadas:
                     </strong>{' '}
-
                     {consultas.join(', ')}
                 </p>
 
                 <p>
-                    <strong>
-                        Evidencias:
-                    </strong>{' '}
-
+                    <strong>Evidencias:</strong>{' '}
                     {textoEvidencia || 'Ninguna'}
                 </p>
 
@@ -646,7 +613,7 @@ export default function ReporteImpresion({
             </section>
 
 
-            {/* 6. Distribucion final */}
+            {/* 6. Resultados finales */}
             <section className="ri-seccion">
 
                 <h2>
@@ -711,7 +678,6 @@ export default function ReporteImpresion({
                     <strong>
                         Probabilidad de la evidencia:
                     </strong>{' '}
-
                     {
                         resultado.probabilidad_evidencia
                             .toFixed(6)
@@ -722,21 +688,19 @@ export default function ReporteImpresion({
                     <strong>
                         Suma de probabilidades:
                     </strong>{' '}
-
                     {suma.toFixed(6)}
-
                     {' ('}
-
                     {(suma * 100).toFixed(2)}
-
                     {' %)'}
                 </p>
 
             </section>
 
+
+            {/* Pie del reporte */}
             <footer className="ri-pie">
-                Reporte generado desde Redes Bayesianas IDK
-                — Proyecto de Modelos Probabilistas.
+                Universidad Michoacana de San Nicolás de Hidalgo
+                — Modelos Probabilistas
             </footer>
 
         </article>
