@@ -1,0 +1,17 @@
+
+{
+  "rewrites": [
+    {
+      "source": "/estado",
+      "destination": "https://redes-bayesianas-p3wevp9jr-juanalberto05850-6661.vercel.app/estado"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://redes-bayesianas-p3wevp9jr-juanalberto05850-6661.vercel.app/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
