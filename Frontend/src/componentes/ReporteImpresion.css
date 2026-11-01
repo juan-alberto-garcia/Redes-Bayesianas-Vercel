@@ -1,0 +1,169 @@
+
+/* El reporte no aparece dentro de la interfaz de trabajo. */
+.ri-reporte {
+    display: none;
+}
+
+@page {
+    size: A4 portrait;
+    margin: 13mm;
+}
+
+@media print {
+    html,
+    body,
+    #root {
+        background: #fff !important;
+        color: #111827 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow: visible !important;
+    }
+
+    .aplicacion {
+        display: block !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        color: #111827 !important;
+        box-shadow: none !important;
+    }
+
+    .aplicacion > :not(.ri-reporte) {
+        display: none !important;
+    }
+
+    .aplicacion > .ri-reporte {
+        display: block !important;
+    }
+
+    .ri-reporte,
+    .ri-reporte * {
+        box-sizing: border-box;
+        color: #111827;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .ri-reporte {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: 10pt;
+        line-height: 1.45;
+        background: #fff;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .ri-reporte .ri-encabezado {
+        padding-bottom: 10px;
+        border-bottom: 2px solid #334155;
+        margin-bottom: 16px;
+    }
+
+    .ri-reporte .ri-asignatura {
+        margin: 0 0 5px;
+        font-size: 8pt;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .ri-reporte h1 {
+        margin: 0 0 9px;
+        font-size: 19pt;
+    }
+
+    .ri-reporte h2 {
+        margin: 0 0 9px;
+        font-size: 12pt;
+        border-bottom: 1px solid #cbd5e1;
+        padding-bottom: 5px;
+    }
+
+    .ri-reporte h3 {
+        margin: 13px 0 7px;
+        font-size: 10pt;
+    }
+
+    .ri-reporte p {
+        margin: 5px 0;
+    }
+
+    .ri-reporte .ri-seccion {
+        margin: 0 0 18px;
+    }
+
+    .ri-reporte .ri-ayuda {
+        font-size: 9pt;
+        margin-bottom: 9px;
+    }
+
+    .ri-reporte .ri-diagrama {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        max-height: 125mm;
+        margin: 0 auto;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        break-inside: avoid;
+    }
+
+    .ri-reporte .ri-tabla {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        margin-bottom: 9px;
+        font-size: 8.5pt;
+    }
+
+    .ri-reporte .ri-tabla th,
+    .ri-reporte .ri-tabla td {
+        border: 1px solid #aeb8c4;
+        padding: 5px 6px;
+        text-align: left;
+        overflow-wrap: anywhere;
+        background: #fff;
+    }
+
+    .ri-reporte .ri-tabla th {
+        background: #e2e8f0 !important;
+        font-weight: 700;
+    }
+
+    .ri-reporte .ri-tabla thead {
+        display: table-header-group;
+    }
+
+    .ri-reporte .ri-tabla tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .ri-reporte .ri-bloqueCpt h3 {
+        break-after: avoid;
+    }
+
+    .ri-reporte .ri-formula {
+        padding: 7px 10px;
+        border-left: 3px solid #334155;
+        font-size: 12pt;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+    }
+
+    .ri-reporte .ri-pie {
+        margin-top: 15px;
+        padding-top: 8px;
+        border-top: 1px solid #cbd5e1;
+        font-size: 8pt;
+    }
+    .ri-reporte .ri-pie {
+    display: none !important;
+}
+}

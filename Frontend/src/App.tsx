@@ -10,6 +10,7 @@ import EditorConsultaConjunta from './componentes/EditorConsultaConjunta';
 import EditorEstados from './componentes/EditorEstados';
 import SelectorEjemplos from './componentes/SelectorEjemplos';
 import HistorialConsultas from './componentes/HistorialConsultas';
+import ReporteImpresion from './componentes/ReporteImpresion';
 
 import { redesEjemplo } from './ejemplos/redesEjemplo';
 import type { EjemploRed } from './ejemplos/redesEjemplo';
@@ -1590,6 +1591,14 @@ function App() {
                         }
                     </p>
 
+                    {/* Imprimir o guardar como PDF */}
+                    <button
+                        type="button"
+                        onClick={() => window.print()}
+                    >
+                        Imprimir reporte / Guardar PDF
+                    </button>
+
                 </section>
 
             )}
@@ -1602,6 +1611,17 @@ function App() {
                 onEliminar={eliminarRegistro}
                 onVaciar={vaciarHistorial}
             />
+
+
+            {/* Reporte independiente de la interfaz grafica */}
+            {resultado && (
+                <ReporteImpresion
+                    red={redActual}
+                    consultas={consultas}
+                    evidencias={evidencias}
+                    resultado={resultado}
+                />
+            )}
 
         </main>
     );
